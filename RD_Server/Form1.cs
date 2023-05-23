@@ -54,18 +54,12 @@ namespace RD_Server
                 {
                     byte[] byteMsg = Encoding.ASCII.GetBytes("Quit");
                     _streamConnect.Write(byteMsg, 0, byteMsg.Length);
-                    
-                    _streamConnect.Close();
-                    _clientConnect.Close();
 
                     _streamSendImg.Close();
                     _clientSendImg.Close();
                 }
-                else
-                {
-                    _streamConnect.Close();
-                    _clientConnect.Close();
-                }
+                _streamConnect.Close();
+                _clientConnect.Close();
 
             }
             catch (Exception ex)
@@ -155,10 +149,11 @@ namespace RD_Server
                     }
                     else if (msg == "Quit")
                     {
+                        _timer.Stop();
+                        
                         byteMsg = Encoding.ASCII.GetBytes("Quit");
                         await _streamConnect.WriteAsync(byteMsg, 0, byteMsg.Length);
 
-                        _timer.Stop();
                         break;
                     }
                     else

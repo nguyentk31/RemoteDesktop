@@ -8,28 +8,36 @@ namespace RD_Client
     public partial class Form1 : Form
     {
 
-        private TcpClient _tcpClient;
-        private NetworkStream _stream;
+        private TcpClient _tcpClientConnect;
+        private NetworkStream _streamConnect;
+
+        private bool _isConnected;
+
 
         public Form1()
         {
             InitializeComponent();
+            _isConnected = false;
         }
 
         private void btConnect_Click(object sender, EventArgs e)
         {
-            Task t = Connecting();
+            Connecting();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             try
             {
-                byte[] byteMsg = Encoding.ASCII.GetBytes("Quit");
-                _stream.Write(byteMsg, 0, byteMsg.Length);
+                if (_isConnected)
+                {
+                    byte[] byteMsg = Encoding.ASCII.GetBytes("Quit");
+                    _streamConnect.Write(byteMsg, 0, byteMsg.Length);
 
-                _stream.Close();
-                _tcpClient.Close();
+                }
+                _streamConnect.Close();
+                _tcpClientConnect.Close();
+
             }
             catch (Exception ex)
             {
@@ -43,13 +51,13 @@ namespace RD_Client
             {
                 try
                 {
-                    _tcpClient = new TcpClient();
-                    _tcpClient.Connect(IPAddress.Parse(tbIP.Text), 2003);
-                    if (_tcpClient.Connected)
+                    _tcpClientConnect = new TcpClient();
+                    _tcpClientConnect.Connect(IPAddress.Parse(tbIP.Text), 2003);
+                    if (_tcpClientConnect.Connected)
                     {
-                        _stream = _tcpClient.GetStream();
+                        _streamConnect = _tcpClientConnect.GetStream();
                         byte[] byteMsg = Encoding.ASCII.GetBytes(tbPassword.Text);
-                        _stream.Write(byteMsg, 0, byteMsg.Length);
+                        _streamConnect.Write(byteMsg, 0, byteMsg.Length);
                     }
                 }
                 catch (Exception ex)
@@ -70,9 +78,9 @@ namespace RD_Client
                 string msg;
                 while (true)
                 {
-                    length = _tcpClient.Available;
+                    length = _tcpClientConnect.Available;
                     byteMsg = new byte[length];
-                    _stream.Read(byteMsg, 0, length);
+                    _streamConnect.Read(byteMsg, 0, length);
 
                     if (length > 0)
                     {
@@ -93,8 +101,8 @@ namespace RD_Client
                         }
                     }
                 }
-                _stream.Close();
-                _tcpClient.Close();
+                _streamConnect.Close();
+                _tcpClientConnect.Close();
             }
             catch (Exception ex)
             {
@@ -103,7 +111,7 @@ namespace RD_Client
         }
         private async Task ShowScreeen()
         {
-            new Form2(_stream).ShowDialog();
+            new Form2(_streamConnect).ShowDialog();
         }
     }
 }

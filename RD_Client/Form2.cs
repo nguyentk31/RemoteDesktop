@@ -17,7 +17,7 @@ namespace RD_Client
         private TcpListener _tcpListenerRecvImg;
         private TcpClient _tcpClientRecvImg;
         private NetworkStream _streamRecvImg;
-        private NetworkStream _ksStreamConnect;
+        private NetworkStream _streamConnect;
 
         private IPAddress _localIP;
 
@@ -26,7 +26,7 @@ namespace RD_Client
             InitializeComponent();
             _localIP = ipv4();
             _tcpListenerRecvImg = new TcpListener(_localIP, 2004);
-            _ksStreamConnect = ksStream;
+            _streamConnect = ksStream;
         }
 
         private void Form2_Load(object sender, EventArgs e)
@@ -53,7 +53,7 @@ namespace RD_Client
         private void Form2_FormClosing(object sender, FormClosingEventArgs e)
         {
             byte[] byteMsg = Encoding.ASCII.GetBytes("Quit");
-            _ksStreamConnect.Write(byteMsg, 0, byteMsg.Length);
+            _streamConnect.Write(byteMsg, 0, byteMsg.Length);
 
             _streamRecvImg.Close();
             _tcpClientRecvImg.Close();
