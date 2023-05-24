@@ -15,4 +15,4 @@ D:\WorkSpace\VSCode\Csharp\remoteDesktop\RD_Client\obj\Debug\net7.0-windows\refi
 D:\WorkSpace\VSCode\Csharp\remoteDesktop\RD_Client\obj\Debug\net7.0-windows\RD_Client.pdb
 D:\WorkSpace\VSCode\Csharp\remoteDesktop\RD_Client\obj\Debug\net7.0-windows\RD_Client.genruntimeconfig.cache
 D:\WorkSpace\VSCode\Csharp\remoteDesktop\RD_Client\obj\Debug\net7.0-windows\ref\RD_Client.dll
-D:\WorkSpace\VSCode\Csharp\remoteDesktop\RD_Client\obj\Debug\net7.0-windows\RD_Client.Form2.resources
+D:\WorkSpace\VSCode\Csharp\remoteDesktop\RD_Client\obj\Debug\net7.0-windows\RD_Client.Client.resources

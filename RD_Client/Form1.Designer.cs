@@ -91,7 +91,7 @@
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             Name = "Form1";
-            Text = "Client";
+            Text = "Remote Desktop Application";
             Activated += Form1_Activated;
             FormClosing += Form1_FormClosing;
             ResumeLayout(false);
