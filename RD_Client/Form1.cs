@@ -2,47 +2,59 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Windows.Forms;
 
 namespace RD_Client
 {
     public partial class Form1 : Form
     {
 
-        private TcpClient _tcpClientConnect;
-        private NetworkStream _streamConnect;
+        private enum dataFor {Init = 1, Auth, Handle, Stop};
 
-        private bool _isConnected;
+        private TcpClient _tcpClient;
+        private NetworkStream _stream;
+        private Task _task;
+        private bool _taskRan;
 
+        private Form2 _form;
 
         public Form1()
         {
             InitializeComponent();
-            _isConnected = false;
+            _taskRan = false;
         }
 
         private void btConnect_Click(object sender, EventArgs e)
         {
-            Connecting();
+            _task = Connecting();
+            _taskRan = true;
+            tbIP.ReadOnly = tbPassword.ReadOnly = true;
+            btConnect.Enabled = false;
+        }
+
+        private void Form1_Activated(object sender, EventArgs e)
+        {
+            if (!Form2._isOn)
+            {
+                tbIP.ReadOnly = tbPassword.ReadOnly = false;
+                btConnect.Enabled = true;
+                _taskRan = false;
+            }
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            try
-            {
-                if (_isConnected)
-                {
-                    byte[] byteMsg = Encoding.ASCII.GetBytes("Quit");
-                    _streamConnect.Write(byteMsg, 0, byteMsg.Length);
-
-                }
-                _streamConnect.Close();
-                _tcpClientConnect.Close();
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            if (Form2._isOn)
+                _form.Close();
+        }
+        
+        private byte[] AddHeader(byte[] info, int type)
+        {
+            byte[] rt = new byte[info.Length + 1];
+            byte[] header = Encoding.ASCII.GetBytes(type.ToString());
+            Buffer.BlockCopy(header, 0, rt, 0, 1);
+            Buffer.BlockCopy(info, 0, rt, 1, info.Length);
+            return rt;
         }
 
         private async Task Connecting()
@@ -51,14 +63,17 @@ namespace RD_Client
             {
                 try
                 {
-                    _tcpClientConnect = new TcpClient();
-                    _tcpClientConnect.Connect(IPAddress.Parse(tbIP.Text), 2003);
-                    if (_tcpClientConnect.Connected)
+                    _tcpClient = new TcpClient();
+                    _tcpClient.Connect(IPAddress.Parse(tbIP.Text), 2003);
+                    if (_tcpClient.Connected)
                     {
-                        _streamConnect = _tcpClientConnect.GetStream();
-                        byte[] byteMsg = Encoding.ASCII.GetBytes(tbPassword.Text);
-                        _streamConnect.Write(byteMsg, 0, byteMsg.Length);
+                        _stream = _tcpClient.GetStream();
+                        byte[] byteInfo = Encoding.ASCII.GetBytes(tbPassword.Text);
+                        byte[] byteSend = AddHeader(byteInfo, (int) dataFor.Init);
+                        _stream.Write(byteSend, 0, byteSend.Length);
                     }
+                    else
+                        throw new Exception("Server not found");
                 }
                 catch (Exception ex)
                 {
@@ -73,45 +88,34 @@ namespace RD_Client
 
             try
             {
-                int length = 0;
-                byte[] byteMsg;
-                string msg;
-                while (true)
-                {
-                    length = _tcpClientConnect.Available;
-                    byteMsg = new byte[length];
-                    _streamConnect.Read(byteMsg, 0, length);
+                byte[] byteAuth = new byte[4], byteHead = new byte[1];
+                string content;
+                int type;
 
-                    if (length > 0)
+                await _stream.ReadAsync(byteHead, 0, 1);
+                type = Convert.ToInt32(Encoding.ASCII.GetString(byteHead));
+
+                if (type == (int) dataFor.Auth)
+                {
+                    await _stream.ReadAsync(byteAuth, 0, 4);
+                    content = Encoding.ASCII.GetString(byteAuth);
+                    if (content == "1234")
                     {
-                        msg = Encoding.ASCII.GetString(byteMsg);
-                        if (msg == "True")
-                        {
-                            Task showScreen = ShowScreeen();
-                        }
-                        else if (msg == "Quit")
-                        {
-                            MessageBox.Show("Server Quit");
-                            break;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Wrong password");
-                            break;
-                        }
+                        _form = new Form2(_tcpClient, _stream);
+                        new Task(() => _form.ShowDialog()).Start();
                     }
+                    else if (content == "4321")
+                        MessageBox.Show("Wrong Password!");
+                    else
+                        throw new Exception("Connection Error!");
                 }
-                _streamConnect.Close();
-                _tcpClientConnect.Close();
+                else
+                        throw new Exception("Connection Error!");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
             }
-        }
-        private async Task ShowScreeen()
-        {
-            new Form2(_streamConnect).ShowDialog();
         }
     }
 }

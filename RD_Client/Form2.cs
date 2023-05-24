@@ -14,70 +14,111 @@ namespace RD_Client
 {
     public partial class Form2 : Form
     {
-        private TcpListener _tcpListenerRecvImg;
-        private TcpClient _tcpClientRecvImg;
-        private NetworkStream _streamRecvImg;
-        private NetworkStream _streamConnect;
 
-        private IPAddress _localIP;
+        private enum dataFor {Init = 1, Auth, Handle, Stop};
+        private TcpClient _tcpClient;
+        private NetworkStream _stream;
 
-        public Form2(NetworkStream ksStream)
+        private bool _isConnected;
+        internal static bool _isOn = false;
+
+        public Form2(TcpClient tcpClient, NetworkStream stream)
         {
             InitializeComponent();
-            _localIP = ipv4();
-            _tcpListenerRecvImg = new TcpListener(_localIP, 2004);
-            _streamConnect = ksStream;
+            _tcpClient = tcpClient;
+            _stream = stream;
+            _isConnected = true;
+            _isOn = true;
         }
 
         private void Form2_Load(object sender, EventArgs e)
         {
-            _tcpListenerRecvImg.Start();
-            _tcpClientRecvImg = _tcpListenerRecvImg.AcceptTcpClient();
-            _tcpListenerRecvImg.Stop();
-            Task t = Stream();
-        }
-
-        private IPAddress ipv4()
-        {
-            IPHostEntry iphe = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress[] list = iphe.AddressList;
-            foreach (IPAddress ip in list)
+            try
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                    return ip;
+                Run();
             }
-            return null;
-            throw new Exception("Không tìm thấy ipv4 trong hệ thống.");
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
+            }
+            
         }
 
         private void Form2_FormClosing(object sender, FormClosingEventArgs e)
         {
-            byte[] byteMsg = Encoding.ASCII.GetBytes("Quit");
-            _streamConnect.Write(byteMsg, 0, byteMsg.Length);
+            try
+            {
+                if (_isConnected)
+                {
+                    byte[] byteInfo = Encoding.ASCII.GetBytes("Quit");
+                    byte[] byteSend = AddHeader(byteInfo, (int) dataFor.Stop);
+                    _stream.Write(byteSend, 0, byteSend.Length);
 
-            _streamRecvImg.Close();
-            _tcpClientRecvImg.Close();
+                    Thread.Sleep(100);
+                    _stream.Close();
+                    _tcpClient.Close();
+                    _isOn = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
+            }
         }
 
-        private async Task Stream()
+        
+        private byte[] AddHeader(byte[] info, int type)
         {
-            _streamRecvImg = _tcpClientRecvImg.GetStream();
-            byte[] byteImg;
-            int length;
-            while (true)
+            byte[] rt = new byte[info.Length + 1];
+            byte[] header = Encoding.ASCII.GetBytes(type.ToString());
+            Buffer.BlockCopy(header, 0, rt, 0, 1);
+            Buffer.BlockCopy(info, 0, rt, 1, info.Length);
+            return rt;
+        }
+
+        private async Task Run()
+        {
+            try
             {
-                length = 10;
-                byteImg = new byte[length];
-                await _streamRecvImg.ReadAsync(byteImg, 0, length);
-
-                length = Convert.ToInt32(Encoding.ASCII.GetString(byteImg));
-                byteImg = new byte[length];
-                await _streamRecvImg.ReadAsync(byteImg, 0, length);
-
-                using (MemoryStream ms = new MemoryStream(byteImg))
+                byte[] byteHead = new byte[1];
+                byte[] byteInfo;
+                byte[] byteInfoLength = new byte[10];
+                int type;
+                int infoLength;
+                while (true)
                 {
-                    pictureBox1.Image = Image.FromStream(ms);
+                    await _stream.ReadAsync(byteHead, 0, 1);
+                    type = Convert.ToInt32(Encoding.ASCII.GetString(byteHead));
+
+                    if (type == (int) dataFor.Handle)
+                    {
+                        await _stream.ReadAsync(byteInfoLength, 0, 10);
+
+                        infoLength = Convert.ToInt32(Encoding.ASCII.GetString(byteInfoLength));
+                        byteInfo = new byte[infoLength];
+                        await _stream.ReadAsync(byteInfo, 0, infoLength);
+
+                        using (MemoryStream ms = new MemoryStream(byteInfo))
+                        {
+                            pictureBox1.Image = Image.FromStream(ms);
+                        }
+                    }
+                    else
+                    {
+                        _isConnected = false;
+                        if (type == (int) dataFor.Stop)
+                            break;
+                        else
+                            throw new Exception("Connection Error!");
+                    }
+                    
                 }
+
+                
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
             }
         }
     }

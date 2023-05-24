@@ -92,6 +92,7 @@
             MaximizeBox = false;
             Name = "Form1";
             Text = "Client";
+            Activated += Form1_Activated;
             FormClosing += Form1_FormClosing;
             ResumeLayout(false);
             PerformLayout();
