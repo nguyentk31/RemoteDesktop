@@ -1,5 +1,6 @@
 using System.Drawing.Imaging;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 
@@ -39,14 +40,19 @@ namespace RD_Server
         // Lay IPv4 cua server
         private IPAddress IPv4()
         {
-            IPHostEntry iphe = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress[] list = iphe.AddressList;
-            foreach (IPAddress ip in list)
+            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                    return ip;
+                if (ni.GetIPProperties().GatewayAddresses.Count > 0 && ni.OperationalStatus == OperationalStatus.Up)
+                {
+                    foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
+                    {
+                        if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+                            return ip.Address;
+                    }
+                }
             }
             throw new Exception("Can't find IPv4!");
+            
         }
 
         // Khoi tao mot mat khau ngau nhien

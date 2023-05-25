@@ -85,7 +85,7 @@
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "RD_Server";
-            FormClosing += Form1_FormClosing;
+            FormClosed += Form1_FormClosed;
             Load += Form1_Load;
             ResumeLayout(false);
             PerformLayout();
