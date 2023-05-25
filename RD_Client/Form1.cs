@@ -15,27 +15,20 @@ namespace RD_Client
 
         private void btConnect_Click(object sender, EventArgs e)
         {
-            try
+            tbIP.ReadOnly = tbPassword.ReadOnly = true;
+            btConnect.Enabled = false;
+            client = new Client(IPAddress.Parse(tbIP.Text), 2003, tbPassword.Text);
+            int state = client.Connect();
+            if (state == 1)
+                client.Show();
+            else
             {
-                tbIP.ReadOnly = tbPassword.ReadOnly = true;
-                btConnect.Enabled = false;
-                client = new Client(IPAddress.Parse(tbIP.Text), 2003, tbPassword.Text);
-                int state = client.Connecting();
-                if (state == 1)
-                    client.Show();
+                tbIP.ReadOnly = tbPassword.ReadOnly = false;
+                btConnect.Enabled = true;
+                if (state == 0)
+                    MessageBox.Show("Wrong assword!");
                 else
-                {
-                    tbIP.ReadOnly = tbPassword.ReadOnly = false;
-                    btConnect.Enabled = true;
-                    if (state == 0)
-                        MessageBox.Show("Wrong assword!");
-                    else
-                        MessageBox.Show("Server not found!");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
+                    MessageBox.Show("Server not found!");
             }
         }
 

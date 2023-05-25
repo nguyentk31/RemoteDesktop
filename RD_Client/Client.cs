@@ -6,7 +6,7 @@ namespace RD_Client
 {
     public partial class Client : Form
     {
-        private enum dataFor { Init = 1, Auth, Handle, Stop };
+        private enum dataFormat { checkConnection = 1, Handle };
         private readonly IPAddress remoteIP;
         private readonly int remotePort;
         private readonly string password;
@@ -26,7 +26,7 @@ namespace RD_Client
 
         private void Client_Load(object sender, EventArgs e)
         {
-            new Thread(new ThreadStart(Running)).Start();
+            new Thread(new ThreadStart(Run)).Start();
             isOn = true;
         }
 
@@ -37,10 +37,9 @@ namespace RD_Client
                 isOn = false;
                 if (isConnected)
                 {
-                    byte[] byteInfo = Encoding.ASCII.GetBytes("Quit");
-                    byte[] byteSend = AddHeader(byteInfo, (int)dataFor.Stop);
-                    stream.Write(byteSend, 0, byteSend.Length);
-
+                    byte[] bytesData = Encoding.ASCII.GetBytes("Quit");
+                    byte[] bytesSend = CreateBytesSend(bytesData, dataFormat.checkConnection);
+                    stream.Write(bytesSend, 0, bytesSend.Length);
                     Thread.Sleep(100);
                     stream.Close();
                     client.Close();
@@ -52,16 +51,19 @@ namespace RD_Client
             }
         }
 
-        private byte[] AddHeader(byte[] info, int type)
+        private byte[] CreateBytesSend(byte[] bytesData, dataFormat type)
         {
-            byte[] rt = new byte[info.Length + 1];
-            byte[] header = Encoding.ASCII.GetBytes(type.ToString());
-            Buffer.BlockCopy(header, 0, rt, 0, 1);
-            Buffer.BlockCopy(info, 0, rt, 1, info.Length);
-            return rt;
+            int bdlength = bytesData.Length;
+            byte[] bytesSend = new byte[bdlength + 7];
+            byte[] byteHeader = Encoding.ASCII.GetBytes(((int)type).ToString());
+            byte[] bytesLength = Encoding.ASCII.GetBytes(bdlength.ToString());
+            Buffer.BlockCopy(byteHeader, 0, bytesSend, 0, 1);
+            Buffer.BlockCopy(bytesLength, 0, bytesSend, 1, bytesLength.Length);
+            Buffer.BlockCopy(bytesData, 0, bytesSend, 7, bdlength);
+            return bytesSend;
         }
 
-        public int Connecting()
+        public int Connect()
         {
             try
             {
@@ -70,10 +72,10 @@ namespace RD_Client
                 if (client.Connected)
                 {
                     stream = client.GetStream();
-                    byte[] byteInfo = Encoding.ASCII.GetBytes(password);
-                    byte[] byteSend = AddHeader(byteInfo, (int)dataFor.Init);
-                    stream.Write(byteSend, 0, byteSend.Length);
-                    if (Authenticating())
+                    byte[] bytesData = Encoding.ASCII.GetBytes(password);
+                    byte[] bytesSend = CreateBytesSend(bytesData, dataFormat.checkConnection);
+                    stream.Write(bytesSend, 0, bytesSend.Length);
+                    if (Authenticate())
                         return 1;
                     else
                         return 0;
@@ -86,24 +88,17 @@ namespace RD_Client
             return -1;
         }
 
-        private bool Authenticating()
+        private bool Authenticate()
         {
             try
             {
-                byte[] byteAuth = new byte[4], byteHead = new byte[1];
-                string content;
-                int type;
-                stream.Read(byteHead, 0, 1);
-                type = Convert.ToInt32(Encoding.ASCII.GetString(byteHead));
-                if (type == (int)dataFor.Auth)
+                byte[] bytesAuth = new byte[6];
+                stream.Read(bytesAuth, 0, 6);
+                string information = Encoding.ASCII.GetString(bytesAuth);
+                if (information == "123456")
                 {
-                    stream.Read(byteAuth, 0, 4);
-                    content = Encoding.ASCII.GetString(byteAuth);
-                    if (content == "1234")
-                    {
-                        isConnected = true;
-                        return true;
-                    }
+                    isConnected = true;
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -113,47 +108,40 @@ namespace RD_Client
             return false;
         }
 
-        private void Running()
+        private void Run()
         {
             try
             {
-                byte[] byteHead = new byte[1];
-                byte[] byteInfo, byteSend;
-                byte[] byteInfoLength = new byte[6];
-                string type;
-                int infoLength;
+                byte[] byteHeader = new byte[1], bytesLength = new byte[6], bytesData, bytesSend;
+                int bdlength;
+                dataFormat type;
                 while (true)
                 {
-                    stream.Read(byteHead, 0, 1);
-                    type = Encoding.ASCII.GetString(byteHead);
-                    if (type == ((int)dataFor.Handle).ToString())
+                    stream.Read(byteHeader, 0, 1);
+                    type = (dataFormat)Convert.ToInt32(Encoding.ASCII.GetString(byteHeader));
+                    if (type == dataFormat.Handle)
                     {
-                        stream.Read(byteInfoLength, 0, byteInfoLength.Length);
-                        infoLength = Convert.ToInt32(Encoding.ASCII.GetString(byteInfoLength));
-                        byteInfo = new byte[infoLength];
-                        stream.ReadAsync(byteInfo, 0, infoLength);
-                        using (MemoryStream ms = new MemoryStream(byteInfo))
+                        stream.Read(bytesLength, 0, 6);
+                        bdlength = Convert.ToInt32(Encoding.ASCII.GetString(bytesLength));
+                        bytesData = ExactStream.ReadExactly(stream, bdlength);
+                        using (MemoryStream ms = new MemoryStream(bytesData))
                         {
                             pictureBox.Image = Image.FromStream(ms);
                         }
                     }
-                    else if (type == ((int)dataFor.Stop).ToString())
+                    else
                     {
                         isConnected = false;
                         if (isOn)
                         {
-                            byteInfo = Encoding.ASCII.GetBytes("Quit");
-                            byteSend = AddHeader(byteInfo, (int)dataFor.Stop);
-                            stream.Write(byteSend, 0, byteSend.Length);
+                            bytesData = Encoding.ASCII.GetBytes("Quit");
+                            bytesSend = CreateBytesSend(bytesData, dataFormat.checkConnection);
+                            stream.Write(bytesSend, 0, bytesSend.Length);
                         }
                         break;
                     }
-                    else
-                    {
-                        byte[] byteDel = new byte[client.Available];
-                        stream.ReadAsync(byteDel, 0, byteDel.Length);
-                    }
                 }
+                this.Close();
             }
             catch (Exception ex)
             {
