@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "bkluUk0seQzTSG8HdGFdkBL3J3T5kIn+fRchaMv01Hkvot6ov3KhjlrNocpJ3nryOchLzDnEWyKC9ukva2wSTA==",
+  "dgSpecHash": "z7TUILPe630lAaZj0H24bQ8GiFnWmdhGbslo54AqvRRI9tOoHUPcwNijWDUrCfoKZbu5g90Bp/Ep3vqWNgQ0fQ==",
   "success": true,
-  "projectFilePath": "D:\\WorkSpace\\VSCode\\Csharp\\New folder (2)\\RemoteDesktop\\RemoteDesktop.csproj",
+  "projectFilePath": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RemoteDesktop.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

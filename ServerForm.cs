@@ -58,7 +58,7 @@ namespace RemoteDesktop
                     dataBytes = Encoding.ASCII.GetBytes("Quit");
                     bytesSent = RemoteDesktop.CreateBytesSent(dataBytes, dataFormat.checkConnection);
                     stream.Write(bytesSent, 0, bytesSent.Length);
-                    Thread.Sleep(1000);
+                    Thread.Sleep(5000);
                     stream.Close();
                     client.Close();
                 }
@@ -127,8 +127,8 @@ namespace RemoteDesktop
                         Input[] inputs = new Input[] { RemoteDesktop.ConvertBytesToInput(dataBytes) };
                         if (inputs[0].type == (int)InputType.Mouse && inputs[0].u.mi.dwFlags == (uint)MouseEventF.Absolute)
                             User32.SetCursorPos(
-                                inputs[0].u.mi.dx * Screen.PrimaryScreen.Bounds.Width / 1000,
-                                inputs[0].u.mi.dy * Screen.PrimaryScreen.Bounds.Height / 1000);
+                                inputs[0].u.mi.dx * Screen.PrimaryScreen.Bounds.Width / 10000,
+                                inputs[0].u.mi.dy * Screen.PrimaryScreen.Bounds.Height / 10000);
                         else
                             User32.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(Input)));
                     }
@@ -140,7 +140,6 @@ namespace RemoteDesktop
                             tbST.Text = "Server is connected.";
                             bytesSent = Encoding.ASCII.GetBytes(((int)connectionStatus.success).ToString());
                             stream.Write(bytesSent, 0, bytesSent.Length);
-                            Thread.Sleep(100);
                             timer.Start();
                         }
                         else

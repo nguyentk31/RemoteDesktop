@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\WorkSpace\\VSCode\\Csharp\\New folder (2)\\RemoteDesktop\\RemoteDesktop.csproj": {}
+    "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RemoteDesktop.csproj": {}
   },
   "projects": {
-    "D:\\WorkSpace\\VSCode\\Csharp\\New folder (2)\\RemoteDesktop\\RemoteDesktop.csproj": {
+    "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RemoteDesktop.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\WorkSpace\\VSCode\\Csharp\\New folder (2)\\RemoteDesktop\\RemoteDesktop.csproj",
+        "projectUniqueName": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RemoteDesktop.csproj",
         "projectName": "RemoteDesktop",
-        "projectPath": "D:\\WorkSpace\\VSCode\\Csharp\\New folder (2)\\RemoteDesktop\\RemoteDesktop.csproj",
+        "projectPath": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RemoteDesktop.csproj",
         "packagesPath": "C:\\Users\\Asus\\.nuget\\packages\\",
-        "outputPath": "D:\\WorkSpace\\VSCode\\Csharp\\New folder (2)\\RemoteDesktop\\obj\\",
+        "outputPath": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Asus\\AppData\\Roaming\\NuGet\\NuGet.Config",

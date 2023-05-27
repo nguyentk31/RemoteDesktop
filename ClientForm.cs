@@ -48,7 +48,7 @@ namespace RemoteDesktop
                     dataBytes = Encoding.ASCII.GetBytes("Quit");
                     bytesSent = RemoteDesktop.CreateBytesSent(dataBytes, dataFormat.checkConnection);
                     stream.Write(bytesSent, 0, bytesSent.Length);
-                    Thread.Sleep(1000);
+                    Thread.Sleep(5000);
                     stream.Close();
                     client.Close();
                 }
@@ -138,8 +138,8 @@ namespace RemoteDesktop
                 {
                     mi = new MouseInput
                     {
-                        dx = mouse.X * 100 / (this.Size.Width - 25),
-                        dy = mouse.Y * 100 / (this.Size.Height - 50),
+                        dx = mouse.X * 10000 / (this.Size.Width - 25),
+                        dy = mouse.Y * 10000 / (this.Size.Height - 50),
                         dwFlags = (uint)MouseEventF.Absolute,
                         dwExtraInfo = User32.GetMessageExtraInfo()
                     }
