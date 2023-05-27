@@ -18,11 +18,13 @@ namespace RemoteDesktop
 
         private void btConnect_Click(object sender, EventArgs e)
         {
-            Hide();
             fClient client = new fClient(this, IPAddress.Parse(tbIP.Text), tbPW.Text);
             int state = client.Connect();
             if (state == 1)
+            {
+                Hide();
                 client.Show();
+            }
             else if (state == 0)
                 MessageBox.Show("Wrong assword!");
             else

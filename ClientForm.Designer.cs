@@ -53,6 +53,8 @@
             pictureBox.TabIndex = 1;
             pictureBox.TabStop = false;
             pictureBox.MouseDown += pictureBox_MouseDown;
+            pictureBox.MouseEnter += pictureBox_MouseEnter;
+            pictureBox.MouseLeave += pictureBox_MouseLeave;
             pictureBox.MouseMove += pictureBox_MouseMove;
             pictureBox.MouseUp += pictureBox_MouseUp;
             // 
@@ -64,7 +66,6 @@
             Controls.Add(pictureBox);
             Controls.Add(textBox);
             Font = new Font("Times New Roman", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
             Margin = new Padding(4);
             Name = "fClient";
             StartPosition = FormStartPosition.CenterScreen;

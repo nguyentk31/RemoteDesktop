@@ -38,7 +38,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(29, 30);
+            label1.Location = new Point(29, 26);
             label1.Name = "label1";
             label1.Size = new Size(165, 19);
             label1.TabIndex = 0;
@@ -47,7 +47,7 @@
             // tbIP
             // 
             tbIP.Cursor = Cursors.IBeam;
-            tbIP.Location = new Point(29, 52);
+            tbIP.Location = new Point(29, 48);
             tbIP.Name = "tbIP";
             tbIP.Size = new Size(207, 26);
             tbIP.TabIndex = 1;
@@ -55,7 +55,7 @@
             // tbPW
             // 
             tbPW.Cursor = Cursors.IBeam;
-            tbPW.Location = new Point(29, 117);
+            tbPW.Location = new Point(29, 113);
             tbPW.Name = "tbPW";
             tbPW.Size = new Size(207, 26);
             tbPW.TabIndex = 3;
@@ -63,7 +63,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(29, 95);
+            label2.Location = new Point(29, 91);
             label2.Name = "label2";
             label2.Size = new Size(97, 19);
             label2.TabIndex = 2;
@@ -71,30 +71,31 @@
             // 
             // btConnect
             // 
-            btConnect.Location = new Point(304, 136);
+            btConnect.Location = new Point(318, 145);
             btConnect.Name = "btConnect";
             btConnect.Size = new Size(150, 150);
             btConnect.TabIndex = 4;
+            btConnect.TabStop = false;
             btConnect.Text = "CONNECT";
             btConnect.UseVisualStyleBackColor = true;
             btConnect.Click += btConnect_Click;
             // 
             // fConnection
             // 
+            AcceptButton = btConnect;
             AutoScaleDimensions = new SizeF(9F, 19F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(484, 311);
-            Controls.Add(btConnect);
+            ClientSize = new Size(480, 307);
             Controls.Add(tbPW);
             Controls.Add(label2);
             Controls.Add(tbIP);
             Controls.Add(label1);
+            Controls.Add(btConnect);
             Font = new Font("Times New Roman", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
+            FormBorderStyle = FormBorderStyle.Fixed3D;
             Margin = new Padding(4);
             MaximizeBox = false;
             Name = "fConnection";
-            StartPosition = FormStartPosition.CenterParent;
             Text = "Connection";
             FormClosed += fConnection_FormClosed;
             ResumeLayout(false);

@@ -39,7 +39,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(32, 37);
+            label1.Location = new Point(42, 40);
             label1.Name = "label1";
             label1.Size = new Size(98, 19);
             label1.TabIndex = 0;
@@ -48,27 +48,27 @@
             // tbIP
             // 
             tbIP.Cursor = Cursors.IBeam;
-            tbIP.Location = new Point(32, 59);
+            tbIP.Location = new Point(42, 62);
             tbIP.Name = "tbIP";
             tbIP.ReadOnly = true;
-            tbIP.Size = new Size(165, 26);
+            tbIP.Size = new Size(183, 26);
             tbIP.TabIndex = 1;
             tbIP.TabStop = false;
             // 
             // tbPW
             // 
             tbPW.Cursor = Cursors.IBeam;
-            tbPW.Location = new Point(150, 154);
+            tbPW.Location = new Point(144, 159);
             tbPW.Name = "tbPW";
             tbPW.ReadOnly = true;
-            tbPW.Size = new Size(165, 26);
+            tbPW.Size = new Size(183, 26);
             tbPW.TabIndex = 2;
             tbPW.TabStop = false;
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(150, 132);
+            label2.Location = new Point(144, 137);
             label2.Name = "label2";
             label2.Size = new Size(97, 19);
             label2.TabIndex = 2;
@@ -77,17 +77,17 @@
             // tbST
             // 
             tbST.Cursor = Cursors.IBeam;
-            tbST.Location = new Point(285, 248);
+            tbST.Location = new Point(260, 239);
             tbST.Name = "tbST";
             tbST.ReadOnly = true;
-            tbST.Size = new Size(165, 26);
+            tbST.Size = new Size(183, 26);
             tbST.TabIndex = 3;
             tbST.TabStop = false;
             // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(285, 226);
+            label3.Location = new Point(260, 217);
             label3.Name = "label3";
             label3.Size = new Size(67, 19);
             label3.TabIndex = 4;
@@ -97,7 +97,7 @@
             // 
             AutoScaleDimensions = new SizeF(9F, 19F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(484, 311);
+            ClientSize = new Size(480, 307);
             Controls.Add(tbST);
             Controls.Add(label3);
             Controls.Add(tbPW);
@@ -105,11 +105,10 @@
             Controls.Add(tbIP);
             Controls.Add(label1);
             Font = new Font("Times New Roman", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
+            FormBorderStyle = FormBorderStyle.Fixed3D;
             Margin = new Padding(4);
             MaximizeBox = false;
             Name = "fServer";
-            StartPosition = FormStartPosition.CenterParent;
             Text = "Server";
             FormClosed += fServer_FormClosed;
             Load += fServer_Load;
