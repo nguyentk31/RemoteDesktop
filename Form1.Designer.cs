@@ -35,8 +35,8 @@
             // btServer
             // 
             btServer.Font = new Font("Times New Roman", 20F, FontStyle.Regular, GraphicsUnit.Point);
-            btServer.Location = new Point(13, 13);
-            btServer.Margin = new Padding(4, 4, 4, 4);
+            btServer.Location = new Point(27, 13);
+            btServer.Margin = new Padding(4);
             btServer.Name = "btServer";
             btServer.Size = new Size(200, 200);
             btServer.TabIndex = 0;
@@ -48,8 +48,8 @@
             // btClient
             // 
             btClient.Font = new Font("Times New Roman", 20F, FontStyle.Regular, GraphicsUnit.Point);
-            btClient.Location = new Point(271, 98);
-            btClient.Margin = new Padding(4, 4, 4, 4);
+            btClient.Location = new Point(257, 98);
+            btClient.Margin = new Padding(4);
             btClient.Name = "btClient";
             btClient.Size = new Size(200, 200);
             btClient.TabIndex = 1;
@@ -67,7 +67,7 @@
             Controls.Add(btServer);
             Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             FormBorderStyle = FormBorderStyle.FixedSingle;
-            Margin = new Padding(4, 4, 4, 4);
+            Margin = new Padding(4);
             MaximizeBox = false;
             Name = "Form1";
             Text = "Remote Desktop";

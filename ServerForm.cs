@@ -9,33 +9,25 @@ namespace RemoteDesktop
     public partial class fServer : Form
     {
         Form1 formParent;
-
         private readonly IPAddress localIP;
         private readonly string password;
-
         private TcpListener listener;
         private TcpClient client;
         private NetworkStream stream;
         private bool isConnected, isRunning;
-
         private System.Timers.Timer timer;
-
         private byte[] headerByte, authBytes, dataBytes, bytesSent;
 
         public fServer(Form1 fParent)
         {
             InitializeComponent();
             formParent = fParent;
-
             localIP = RemoteDesktop.GetIPv4();
             password = RemoteDesktop.GeneratePassword(RemoteDesktop.passwordLength);
-
             isConnected = false;
             isRunning = true;
-
             timer = new System.Timers.Timer(100);
             timer.Elapsed += (sender, e) => SendImage();
-
             headerByte = new byte[RemoteDesktop.headerLength];
             authBytes = new byte[RemoteDesktop.authLength];
         }
@@ -58,7 +50,7 @@ namespace RemoteDesktop
                     dataBytes = Encoding.ASCII.GetBytes("Quit");
                     bytesSent = RemoteDesktop.CreateBytesSent(dataBytes, dataFormat.checkConnection);
                     stream.Write(bytesSent, 0, bytesSent.Length);
-                    Thread.Sleep(5000);
+                    Thread.Sleep(500);
                     stream.Close();
                     client.Close();
                 }
@@ -69,10 +61,7 @@ namespace RemoteDesktop
             {
                 MessageBox.Show($"Exception: of type {ex.GetType().Name}.\nMessage: {ex.Message}");
             }
-            finally
-            {
-                formParent.Show();
-            }
+            formParent.Show();
         }
 
         private void Listen()
@@ -81,7 +70,7 @@ namespace RemoteDesktop
             {
                 listener = new TcpListener(localIP, RemoteDesktop.port);
                 listener.Start();
-                tbST.Text = "Server is listening.";
+                tbST.Text = "SERVER IS LISTENING.";
                 while (isRunning)
                 {
                     if (!listener.Pending())
@@ -117,27 +106,22 @@ namespace RemoteDesktop
                 {
                     headerByte = RemoteDesktop.ReadExactly(stream, RemoteDesktop.headerLength);
                     type = (dataFormat)Convert.ToInt32(Encoding.ASCII.GetString(headerByte));
-
                     authBytes = RemoteDesktop.ReadExactly(stream, RemoteDesktop.authLength);
                     dblength = Convert.ToInt32(Encoding.ASCII.GetString(authBytes));
-
                     dataBytes = RemoteDesktop.ReadExactly(stream, dblength);
                     if (type == dataFormat.handle)
                     {
-                        Input[] inputs = new Input[] { RemoteDesktop.ConvertBytesToInput(dataBytes) };
-                        if (inputs[0].type == (int)InputType.Mouse && inputs[0].u.mi.dwFlags == (uint)MouseEventF.Absolute)
-                            User32.SetCursorPos(
-                                inputs[0].u.mi.dx * Screen.PrimaryScreen.Bounds.Width / 10000,
-                                inputs[0].u.mi.dy * Screen.PrimaryScreen.Bounds.Height / 10000);
-                        else
-                            User32.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(Input)));
+                        Input[] inputs = RemoteDesktop.HandleInputBytes(dataBytes);
+                        if (inputs[0].u.mi.dwFlags == (uint)MouseEventF.Absolute)
+                            continue;
+                        User32.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(Input)));
                     }
                     else if (dblength == RemoteDesktop.passwordLength)
                     {
                         infomation = Encoding.ASCII.GetString(dataBytes);
                         if (infomation == password)
                         {
-                            tbST.Text = "Server is connected.";
+                            tbST.Text = "SERVER IS CONNECTED.";
                             bytesSent = Encoding.ASCII.GetBytes(((int)connectionStatus.success).ToString());
                             stream.Write(bytesSent, 0, bytesSent.Length);
                             timer.Start();
@@ -150,7 +134,7 @@ namespace RemoteDesktop
                         }
                     }
                     else
-                    {   
+                    {
                         timer.Stop();
                         if (isConnected)
                         {
@@ -161,13 +145,13 @@ namespace RemoteDesktop
                         break;
                     }
                 }
-                isConnected = false;
-                new Thread(new ThreadStart(Listen)).Start();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception: of type {ex.GetType().Name}.\nMessage: {ex.Message}");
             }
+            isConnected = false;
+            new Thread(new ThreadStart(Listen)).Start();
         }
 
         private void SendImage()
@@ -185,6 +169,7 @@ namespace RemoteDesktop
             }
             catch (Exception ex)
             {
+                timer.Stop();
                 MessageBox.Show($"Exception: of type {ex.GetType().Name}.\nMessage: {ex.Message}");
             }
         }

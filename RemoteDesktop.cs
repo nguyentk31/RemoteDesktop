@@ -7,9 +7,14 @@ using System.Text;
 
 namespace RemoteDesktop
 {
-    internal enum dataFormat { checkConnection = 1, handle };
+    internal enum dataFormat { checkConnection = 1, handle }
 
-    internal enum connectionStatus { success = 123456, failure = 654321 };
+    internal enum connectionStatus { success = 123456, failure = 654321 }
+
+    internal enum inputType { mouse, key }
+
+    internal enum inputEvent { up, down, move }
+
 
     internal static class RemoteDesktop
     {
@@ -37,31 +42,98 @@ namespace RemoteDesktop
         
         internal static Image Capture()
         {
-            Rectangle bound = Screen.PrimaryScreen.Bounds;
-            Bitmap bitmap = new Bitmap(bound.Width, bound.Height, PixelFormat.Format32bppArgb);
-            using (Graphics graphics = Graphics.FromImage(bitmap))
+            try
             {
-                graphics.CopyFromScreen(bound.X, bound.Y, 0, 0, bound.Size, CopyPixelOperation.SourceCopy);
-                CURSORINFO cursorInfo;
-                cursorInfo.cbSize = Marshal.SizeOf(typeof(CURSORINFO));
-                if (User32.GetCursorInfo(out cursorInfo))
+                Rectangle bound = Screen.PrimaryScreen.Bounds;
+                Bitmap bitmap = new Bitmap(bound.Width, bound.Height, PixelFormat.Format32bppArgb);
+                using (Graphics graphics = Graphics.FromImage(bitmap))
                 {
-                    if (cursorInfo.flags == User32.CURSOR_SHOWING)
+                    graphics.CopyFromScreen(bound.X, bound.Y, 0, 0, bound.Size, CopyPixelOperation.SourceCopy);
+                    CURSORINFO cursorInfo;
+                    cursorInfo.cbSize = Marshal.SizeOf(typeof(CURSORINFO));
+                    if (User32.GetCursorInfo(out cursorInfo))
                     {
-                        var iconPointer = User32.CopyIcon(cursorInfo.hCursor);
-                        ICONINFO iconInfo;
-                        int iconX, iconY;
-                        if (User32.GetIconInfo(iconPointer, out iconInfo))
+                        if (cursorInfo.flags == User32.CURSOR_SHOWING)
                         {
-                            iconX = cursorInfo.ptScreenPos.x - ((int)iconInfo.xHotspot);
-                            iconY = cursorInfo.ptScreenPos.y - ((int)iconInfo.yHotspot);
-                            User32.DrawIcon(graphics.GetHdc(), iconX, iconY, cursorInfo.hCursor);
-                            graphics.ReleaseHdc();
+                            var iconPointer = User32.CopyIcon(cursorInfo.hCursor);
+                            ICONINFO iconInfo;
+                            int iconX, iconY;
+                            if (User32.GetIconInfo(iconPointer, out iconInfo))
+                            {
+                                iconX = cursorInfo.ptScreenPos.x - ((int)iconInfo.xHotspot);
+                                iconY = cursorInfo.ptScreenPos.y - ((int)iconInfo.yHotspot);
+                                User32.DrawIcon(graphics.GetHdc(), iconX, iconY, cursorInfo.hCursor);
+                                graphics.ReleaseHdc();
+                            }
                         }
                     }
                 }
+                return bitmap;
             }
-            return bitmap;
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
+            }
+            return null;
+        }
+
+        internal static byte[] CreateInputBytes(ushort iType, ushort iEvent, ushort iInfor1, ushort iInfor2 = 0)
+        {
+            byte[] inputBytes = new byte[8];
+            Buffer.BlockCopy(BitConverter.GetBytes(iType), 0, inputBytes, 0, 2);
+            Buffer.BlockCopy(BitConverter.GetBytes(iEvent), 0, inputBytes, 2, 2);
+            Buffer.BlockCopy(BitConverter.GetBytes(iInfor1), 0, inputBytes, 4, 2);
+            Buffer.BlockCopy(BitConverter.GetBytes(iInfor2), 0, inputBytes, 6, 2);
+            return inputBytes;
+        }
+
+        internal static Input[] HandleInputBytes(byte[] iBytes)
+        {
+            ushort iType = BitConverter.ToUInt16(iBytes, 0),
+                iEvent = BitConverter.ToUInt16(iBytes, 2),
+                iInfor1 = BitConverter.ToUInt16(iBytes, 4),
+                iInfor2 = BitConverter.ToUInt16(iBytes, 6);  
+            Input input = new Input();
+            input.u.ki.dwExtraInfo = User32.GetMessageExtraInfo();
+            if (iType == (ushort)InputType.Keyboard)
+            {
+                input.type = (int)InputType.Keyboard;
+                input.u.ki.wVk = iInfor1;
+                if (iEvent == (ushort)inputEvent.down)
+                    input.u.ki.dwFlags = (uint)KeyEventF.KeyDown;
+                else
+                    input.u.ki.dwFlags = (uint)KeyEventF.KeyUp;
+            }
+            else
+            {
+                input.type = (int)InputType.Mouse;
+                if (iEvent == (ushort)inputEvent.move)
+                {
+                    int x = (int)iInfor1 * Screen.PrimaryScreen.Bounds.Width / 10000;
+                    int y = (int)iInfor2 * Screen.PrimaryScreen.Bounds.Height / 10000;
+                    input.u.mi.dwFlags = (uint)MouseEventF.Absolute;
+                    User32.SetCursorPos(x, y);
+                }
+                else if (iEvent == (ushort)inputEvent.down)
+                {
+                    if (iInfor1 == 1)
+                        input.u.mi.dwFlags = (uint)MouseEventF.LeftDown;
+                    else if (iInfor2 == 1)
+                        input.u.mi.dwFlags = (uint)MouseEventF.RightDown;
+                    else
+                        input.u.mi.dwFlags = (uint)MouseEventF.MiddleDown;
+                }
+                else
+                {
+                    if (iInfor1 == 1)
+                        input.u.mi.dwFlags = (uint)MouseEventF.LeftUp;
+                    else if (iInfor2 == 1)
+                        input.u.mi.dwFlags = (uint)MouseEventF.RightUp;
+                    else
+                        input.u.mi.dwFlags = (uint)MouseEventF.MiddleUp;
+                }
+            }
+            return new Input[] {input};
         }
 
         internal static byte[] CreateBytesSent(byte[] dataBytes, dataFormat type)
@@ -102,6 +174,10 @@ namespace RemoteDesktop
                 Marshal.StructureToPtr(input, ptr, true);
                 Marshal.Copy(ptr, arr, 0, size);
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
+            }
             finally
             {
                 Marshal.FreeHGlobal(ptr);
@@ -119,6 +195,10 @@ namespace RemoteDesktop
                 ptr = Marshal.AllocHGlobal(size);
                 Marshal.Copy(arr, 0, ptr, size);
                 input = (Input)Marshal.PtrToStructure(ptr, input.GetType());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
             }
             finally
             {
