@@ -89,49 +89,56 @@ namespace RemoteDesktop
 
         internal static Input[] HandleInputBytes(byte[] iBytes)
         {
-            ushort iType = BitConverter.ToUInt16(iBytes, 0),
-                iEvent = BitConverter.ToUInt16(iBytes, 2),
-                iInfor1 = BitConverter.ToUInt16(iBytes, 4),
-                iInfor2 = BitConverter.ToUInt16(iBytes, 6);  
             Input input = new Input();
             input.u.ki.dwExtraInfo = User32.GetMessageExtraInfo();
-            if (iType == (ushort)InputType.Keyboard)
+            try
             {
-                input.type = (int)InputType.Keyboard;
-                input.u.ki.wVk = iInfor1;
-                if (iEvent == (ushort)inputEvent.down)
-                    input.u.ki.dwFlags = (uint)KeyEventF.KeyDown;
+                ushort iType = BitConverter.ToUInt16(iBytes, 0),
+                    iEvent = BitConverter.ToUInt16(iBytes, 2),
+                    iInfor1 = BitConverter.ToUInt16(iBytes, 4),
+                    iInfor2 = BitConverter.ToUInt16(iBytes, 6);  
+                if (iType == (ushort)InputType.Keyboard)
+                {
+                    input.type = (int)InputType.Keyboard;
+                    input.u.ki.wVk = iInfor1;
+                    if (iEvent == (ushort)inputEvent.down)
+                        input.u.ki.dwFlags = (uint)KeyEventF.KeyDown;
+                    else
+                        input.u.ki.dwFlags = (uint)KeyEventF.KeyUp;
+                }
                 else
-                    input.u.ki.dwFlags = (uint)KeyEventF.KeyUp;
+                {
+                    input.type = (int)InputType.Mouse;
+                    if (iEvent == (ushort)inputEvent.move)
+                    {
+                        int x = (int)iInfor1 * Screen.PrimaryScreen.Bounds.Width / 10000;
+                        int y = (int)iInfor2 * Screen.PrimaryScreen.Bounds.Height / 10000;
+                        input.u.mi.dwFlags = (uint)MouseEventF.Absolute;
+                        User32.SetCursorPos(x, y);
+                    }
+                    else if (iEvent == (ushort)inputEvent.down)
+                    {
+                        if (iInfor1 == 1)
+                            input.u.mi.dwFlags = (uint)MouseEventF.LeftDown;
+                        else if (iInfor2 == 1)
+                            input.u.mi.dwFlags = (uint)MouseEventF.RightDown;
+                        else
+                            input.u.mi.dwFlags = (uint)MouseEventF.MiddleDown;
+                    }
+                    else
+                    {
+                        if (iInfor1 == 1)
+                            input.u.mi.dwFlags = (uint)MouseEventF.LeftUp;
+                        else if (iInfor2 == 1)
+                            input.u.mi.dwFlags = (uint)MouseEventF.RightUp;
+                        else
+                            input.u.mi.dwFlags = (uint)MouseEventF.MiddleUp;
+                    }
+                } 
             }
-            else
+            catch (Exception ex)
             {
-                input.type = (int)InputType.Mouse;
-                if (iEvent == (ushort)inputEvent.move)
-                {
-                    int x = (int)iInfor1 * Screen.PrimaryScreen.Bounds.Width / 10000;
-                    int y = (int)iInfor2 * Screen.PrimaryScreen.Bounds.Height / 10000;
-                    input.u.mi.dwFlags = (uint)MouseEventF.Absolute;
-                    User32.SetCursorPos(x, y);
-                }
-                else if (iEvent == (ushort)inputEvent.down)
-                {
-                    if (iInfor1 == 1)
-                        input.u.mi.dwFlags = (uint)MouseEventF.LeftDown;
-                    else if (iInfor2 == 1)
-                        input.u.mi.dwFlags = (uint)MouseEventF.RightDown;
-                    else
-                        input.u.mi.dwFlags = (uint)MouseEventF.MiddleDown;
-                }
-                else
-                {
-                    if (iInfor1 == 1)
-                        input.u.mi.dwFlags = (uint)MouseEventF.LeftUp;
-                    else if (iInfor2 == 1)
-                        input.u.mi.dwFlags = (uint)MouseEventF.RightUp;
-                    else
-                        input.u.mi.dwFlags = (uint)MouseEventF.MiddleUp;
-                }
+                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
             }
             return new Input[] {input};
         }
@@ -161,50 +168,6 @@ namespace RemoteDesktop
             }
             System.Diagnostics.Debug.Assert(offset == length);
             return bytesReceived;
-        }
-
-        internal static byte[] ConvertInputToBytes(Input input)
-        {
-            int size = Marshal.SizeOf(input);
-            byte[] arr = new byte[size];
-            IntPtr ptr = IntPtr.Zero;
-            try
-            {
-                ptr = Marshal.AllocHGlobal(size);
-                Marshal.StructureToPtr(input, ptr, true);
-                Marshal.Copy(ptr, arr, 0, size);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(ptr);
-            }
-            return arr;
-        }
-
-        internal static Input ConvertBytesToInput(byte[] arr)
-        {
-            Input input = new Input();
-            int size = Marshal.SizeOf(input);
-            IntPtr ptr = IntPtr.Zero;
-            try
-            {
-                ptr = Marshal.AllocHGlobal(size);
-                Marshal.Copy(arr, 0, ptr, size);
-                input = (Input)Marshal.PtrToStructure(ptr, input.GetType());
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(ptr);
-            }
-            return input;
         }
     }
 }
