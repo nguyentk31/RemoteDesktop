@@ -92,7 +92,7 @@ namespace RD_Server
                 string infomation;
                 int bdlength;
                 dataFormat type;
-                while (true)
+                while (isConnected)
                 {
                     stream.Read(byteHeader, 0, 1);
                     type = (dataFormat)Convert.ToInt32(Encoding.ASCII.GetString(byteHeader));

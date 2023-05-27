@@ -41,10 +41,10 @@ namespace RD_Client
             {
                 if (isConnected)
                 {
+                    isConnected = false;
                     byte[] bytesData = Encoding.ASCII.GetBytes("Quit");
                     byte[] bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.checkConnection);
                     stream.Write(bytesSend, 0, bytesSend.Length);
-                    isConnected = false;
                     Thread.Sleep(100);
                     stream.Close();
                     client.Close();
@@ -288,10 +288,10 @@ namespace RD_Client
                     {
                         if (isConnected)
                         {
+                            isConnected = false;
                             bytesData = Encoding.ASCII.GetBytes("Quit");
                             bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.checkConnection);
                             stream.Write(bytesSend, 0, bytesSend.Length);
-                            isConnected = false;
                         }
                         break;
                     }
