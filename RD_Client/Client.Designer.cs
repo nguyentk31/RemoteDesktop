@@ -28,9 +28,20 @@
         /// </summary>
         private void InitializeComponent()
         {
+            tb = new TextBox();
             pictureBox = new PictureBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox).BeginInit();
             SuspendLayout();
+            // 
+            // tb
+            // 
+            tb.Location = new Point(12, 415);
+            tb.Name = "tb";
+            tb.ReadOnly = true;
+            tb.Size = new Size(28, 23);
+            tb.TabIndex = 0;
+            tb.KeyDown += tb_KeyDown;
+            tb.KeyUp += tb_KeyUp;
             // 
             // pictureBox
             // 
@@ -39,8 +50,12 @@
             pictureBox.Name = "pictureBox";
             pictureBox.Size = new Size(800, 450);
             pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox.TabIndex = 0;
+            pictureBox.TabIndex = 1;
             pictureBox.TabStop = false;
+            pictureBox.MouseMove += pictureBox_MouseMove;
+            pictureBox.MouseWheel += pictureBox_MouseWheel;
+            pictureBox.MouseDown += pictureBox_MouseDown;
+            pictureBox.MouseUp += pictureBox_MouseUp;
             // 
             // Client
             // 
@@ -48,17 +63,22 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
             Controls.Add(pictureBox);
+            Controls.Add(tb);
             Name = "Client";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Client";
+            Activated += Client_Activated;
+            Deactivate += Client_Deactivate;
             FormClosed += Client_FormClosed;
             Load += Client_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox).EndInit();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
 
+        private TextBox tb;
         private PictureBox pictureBox;
     }
 }

@@ -50,7 +50,6 @@
             tbIP.Name = "tbIP";
             tbIP.Size = new Size(219, 25);
             tbIP.TabIndex = 1;
-            tbIP.Text = "192.168.30.129";
             // 
             // tbPassword
             // 
@@ -93,8 +92,6 @@
             MaximizeBox = false;
             Name = "Form1";
             Text = "Remote Desktop Application";
-            Activated += Form1_Activated;
-            FormClosing += Form1_FormClosing;
             ResumeLayout(false);
             PerformLayout();
         }

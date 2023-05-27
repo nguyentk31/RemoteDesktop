@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\WorkSpace\\VSCode\\Csharp\\remoteDesktop\\RD_Server\\RD_Server.csproj": {}
+    "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RD_server\\RD_Server.csproj": {}
   },
   "projects": {
-    "D:\\WorkSpace\\VSCode\\Csharp\\remoteDesktop\\RD_Server\\RD_Server.csproj": {
+    "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RD_server\\RD_Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\WorkSpace\\VSCode\\Csharp\\remoteDesktop\\RD_Server\\RD_Server.csproj",
+        "projectUniqueName": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RD_server\\RD_Server.csproj",
         "projectName": "RD_Server",
-        "projectPath": "D:\\WorkSpace\\VSCode\\Csharp\\remoteDesktop\\RD_Server\\RD_Server.csproj",
+        "projectPath": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RD_server\\RD_Server.csproj",
         "packagesPath": "C:\\Users\\Asus\\.nuget\\packages\\",
-        "outputPath": "D:\\WorkSpace\\VSCode\\Csharp\\remoteDesktop\\RD_Server\\obj\\",
+        "outputPath": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RD_server\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Asus\\AppData\\Roaming\\NuGet\\NuGet.Config",

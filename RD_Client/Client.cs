@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using RemoteDesktop;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
@@ -6,40 +7,44 @@ namespace RD_Client
 {
     public partial class Client : Form
     {
-        private enum dataFormat { checkConnection = 1, Handle };
         private readonly IPAddress remoteIP;
         private readonly int remotePort;
         private readonly string password;
         private TcpClient client;
         private NetworkStream stream;
-        private bool isConnected;
-        internal static bool isOn;
+        private bool isActivated, isConnected;
+        private Point mouse;
+        private byte[] byteHeader, bytesAuth, bytesLength, bytesData, bytesSend;
+        private Form1 formParent;
 
-        public Client(IPAddress _remoteIP, int _remotePort, string _password)
+        public Client(IPAddress _remoteIP, int _remotePort, string _password, Form1 fParent)
         {
             InitializeComponent();
+            formParent = fParent;
             remoteIP = _remoteIP;
             remotePort = _remotePort;
             password = _password;
-            isOn = isConnected = false;
+            isConnected = false;
+            byteHeader = new byte[1];
+            bytesAuth = bytesLength = new byte[6];
         }
 
         private void Client_Load(object sender, EventArgs e)
         {
+            formParent.Hide();
             new Thread(new ThreadStart(Run)).Start();
-            isOn = true;
         }
 
         private void Client_FormClosed(object sender, FormClosedEventArgs e)
         {
             try
             {
-                isOn = false;
                 if (isConnected)
                 {
                     byte[] bytesData = Encoding.ASCII.GetBytes("Quit");
-                    byte[] bytesSend = CreateBytesSend(bytesData, dataFormat.checkConnection);
+                    byte[] bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.checkConnection);
                     stream.Write(bytesSend, 0, bytesSend.Length);
+                    isConnected = false;
                     Thread.Sleep(100);
                     stream.Close();
                     client.Close();
@@ -49,18 +54,170 @@ namespace RD_Client
             {
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
             }
+            formParent.Show();
         }
 
-        private byte[] CreateBytesSend(byte[] bytesData, dataFormat type)
+        private void Client_Activated(object sender, EventArgs e)
         {
-            int bdlength = bytesData.Length;
-            byte[] bytesSend = new byte[bdlength + 7];
-            byte[] byteHeader = Encoding.ASCII.GetBytes(((int)type).ToString());
-            byte[] bytesLength = Encoding.ASCII.GetBytes(bdlength.ToString());
-            Buffer.BlockCopy(byteHeader, 0, bytesSend, 0, 1);
-            Buffer.BlockCopy(bytesLength, 0, bytesSend, 1, bytesLength.Length);
-            Buffer.BlockCopy(bytesData, 0, bytesSend, 7, bdlength);
-            return bytesSend;
+            if (!isConnected)
+                Close();
+            Cursor.Hide();
+            isActivated = true;
+        }
+
+        private void Client_Deactivate(object sender, EventArgs e)
+        {
+            Cursor.Show();
+            isActivated = false;
+        }
+
+        private void pictureBox_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!isConnected)
+                Close();
+            if (!isActivated)
+                return;
+            mouse = this.PointToClient(Cursor.Position);
+            Input input = new Input
+            {
+                type = (int)InputType.Mouse,
+                u = new InputUnion
+                {
+                    mi = new MouseInput
+                    {
+                        dx = mouse.X * 100 / (this.Size.Width - 25),
+                        dy = mouse.Y * 100 / (this.Size.Height - 50),
+                        dwFlags = (uint)MouseEventF.Absolute,
+                        dwExtraInfo = User32.GetMessageExtraInfo()
+                    }
+                }
+            };
+            bytesData = RDFunctions.ConvertInputToBytes(input);
+            bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.handle);
+            stream.Write(bytesSend, 0, bytesSend.Length);
+        }
+
+        private void pictureBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (!isConnected)
+                Close();
+            if (!isActivated)
+                return;
+            Input input = new Input
+            {
+                type = (int)InputType.Mouse,
+                u = new InputUnion
+                {
+                    mi = new MouseInput
+                    {
+                        dwExtraInfo = User32.GetMessageExtraInfo()
+                    }
+                }
+            };
+            if (e.Button == MouseButtons.Right)
+                input.u.mi.dwFlags = (uint)MouseEventF.RightDown;
+            else if (e.Button == MouseButtons.Left)
+                input.u.mi.dwFlags = (uint)MouseEventF.LeftDown;
+            else
+                input.u.mi.dwFlags = (uint)MouseEventF.MiddleDown;
+            bytesData = RDFunctions.ConvertInputToBytes(input);
+            bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.handle);
+            stream.Write(bytesSend, 0, bytesSend.Length);
+        }
+        private void pictureBox_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (!isConnected)
+                Close();
+            if (!isActivated)
+                return;
+            Input input = new Input
+            {
+                type = (int)InputType.Mouse,
+                u = new InputUnion
+                {
+                    mi = new MouseInput
+                    {
+                        dwExtraInfo = User32.GetMessageExtraInfo()
+                    }
+                }
+            };
+            if (e.Button == MouseButtons.Right)
+                input.u.mi.dwFlags = (uint)MouseEventF.RightUp;
+            else if (e.Button == MouseButtons.Left)
+                input.u.mi.dwFlags = (uint)MouseEventF.LeftUp;
+            else
+                input.u.mi.dwFlags = (uint)MouseEventF.MiddleUp;
+            bytesData = RDFunctions.ConvertInputToBytes(input);
+            bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.handle);
+            stream.Write(bytesSend, 0, bytesSend.Length);
+        }
+
+        private void pictureBox_MouseWheel(object? sender, MouseEventArgs e)
+        {
+            if (!isConnected)
+                Close();
+            if (!isActivated)
+                return;
+            Input input = new Input
+            {
+                type = (int)InputType.Mouse,
+                u = new InputUnion
+                {
+                    mi = new MouseInput
+                    {
+                        mouseData = (uint)e.Delta,
+                        dwFlags = (uint)MouseEventF.Wheel,
+                        dwExtraInfo = User32.GetMessageExtraInfo()
+                    }
+                }
+            };
+            bytesData = RDFunctions.ConvertInputToBytes(input);
+            bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.handle);
+            stream.Write(bytesSend, 0, bytesSend.Length);
+        }
+
+        private void tb_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (!isConnected)
+                Close();
+            Input input = new Input
+            {
+                type = (int)InputType.Keyboard,
+                u = new InputUnion
+                {
+                    ki = new KeyboardInput
+                    {
+                        wVk = ((ushort)e.KeyCode),
+                        dwFlags = (uint)(KeyEventF.KeyDown),
+                        dwExtraInfo = User32.GetMessageExtraInfo()
+                    }
+                }
+            };
+            bytesData = RDFunctions.ConvertInputToBytes(input);
+            bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.handle);
+            stream.Write(bytesSend, 0, bytesSend.Length);
+        }
+
+        private void tb_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (!isConnected)
+                Close();
+            Input input = new Input
+            {
+                type = (int)InputType.Keyboard,
+                u = new InputUnion
+                {
+                    ki = new KeyboardInput
+                    {
+                        wVk = ((ushort)e.KeyCode),
+                        dwFlags = (uint)(KeyEventF.KeyUp),
+                        dwExtraInfo = User32.GetMessageExtraInfo()
+                    }
+                }
+            };
+            bytesData = RDFunctions.ConvertInputToBytes(input);
+            bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.handle);
+            stream.Write(bytesSend, 0, bytesSend.Length);
         }
 
         public int Connect()
@@ -72,8 +229,8 @@ namespace RD_Client
                 if (client.Connected)
                 {
                     stream = client.GetStream();
-                    byte[] bytesData = Encoding.ASCII.GetBytes(password);
-                    byte[] bytesSend = CreateBytesSend(bytesData, dataFormat.checkConnection);
+                    bytesData = Encoding.ASCII.GetBytes(password);
+                    bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.checkConnection);
                     stream.Write(bytesSend, 0, bytesSend.Length);
                     if (Authenticate())
                         return 1;
@@ -92,7 +249,6 @@ namespace RD_Client
         {
             try
             {
-                byte[] bytesAuth = new byte[6];
                 stream.Read(bytesAuth, 0, 6);
                 string information = Encoding.ASCII.GetString(bytesAuth);
                 if (information == "123456")
@@ -112,18 +268,17 @@ namespace RD_Client
         {
             try
             {
-                byte[] byteHeader = new byte[1], bytesLength = new byte[6], bytesData, bytesSend;
                 int bdlength;
                 dataFormat type;
                 while (true)
                 {
                     stream.Read(byteHeader, 0, 1);
                     type = (dataFormat)Convert.ToInt32(Encoding.ASCII.GetString(byteHeader));
-                    if (type == dataFormat.Handle)
+                    if (type == dataFormat.handle)
                     {
                         stream.Read(bytesLength, 0, 6);
                         bdlength = Convert.ToInt32(Encoding.ASCII.GetString(bytesLength));
-                        bytesData = ExactStream.ReadExactly(stream, bdlength);
+                        bytesData = RDFunctions.ReadExactly(stream, bdlength);
                         using (MemoryStream ms = new MemoryStream(bytesData))
                         {
                             pictureBox.Image = Image.FromStream(ms);
@@ -131,17 +286,16 @@ namespace RD_Client
                     }
                     else
                     {
-                        isConnected = false;
-                        if (isOn)
+                        if (isConnected)
                         {
                             bytesData = Encoding.ASCII.GetBytes("Quit");
-                            bytesSend = CreateBytesSend(bytesData, dataFormat.checkConnection);
+                            bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.checkConnection);
                             stream.Write(bytesSend, 0, bytesSend.Length);
+                            isConnected = false;
                         }
                         break;
                     }
                 }
-                this.Close();
             }
             catch (Exception ex)
             {

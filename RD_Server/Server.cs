@@ -1,14 +1,15 @@
+using RemoteDesktop;
 using System.Drawing.Imaging;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace RD_Server
 {
     internal class Server
     {
-        private enum dataFormat { checkConnection = 1, handle };
         private readonly int passwordLength;
         public string password {get;}
         public IPAddress localIP {get;}
@@ -16,9 +17,9 @@ namespace RD_Server
         private TcpListener listener;
         private TcpClient client;
         private NetworkStream stream;
-        private bool isConnected;
-        private bool isOn;
+        private bool isConnected, isOn;
         private System.Timers.Timer timer;
+        private byte[] byteHeader, bytesLength, bytesData, bytesSend;
 
         public Server()
         {
@@ -26,6 +27,8 @@ namespace RD_Server
             localPort = 2003;
             passwordLength = 8;
             password = GeneratePassword(passwordLength);
+            byteHeader = new byte[1];
+            bytesLength = new byte[6];
             isConnected = false;
             isOn = true;
             timer = new System.Timers.Timer(100);
@@ -50,18 +53,6 @@ namespace RD_Server
             for (int i = 0; i < pwLength; i++)
                 pw += (char)rnd.Next(48, 122);
             return pw;
-        }
-
-        private byte[] CreateBytesSend(byte[] bytesData, dataFormat type)
-        {
-            int bdlength = bytesData.Length;
-            byte[] bytesSend = new byte[bdlength + 7];
-            byte[] byteHeader = Encoding.ASCII.GetBytes(((int)type).ToString());
-            byte[] bytesLength = Encoding.ASCII.GetBytes(bdlength.ToString());
-            Buffer.BlockCopy(byteHeader, 0, bytesSend, 0, 1);
-            Buffer.BlockCopy(bytesLength, 0, bytesSend, 1, bytesLength.Length);
-            Buffer.BlockCopy(bytesData, 0, bytesSend, 7, bdlength);
-            return bytesSend;
         }
 
         public void StartListening()
@@ -98,7 +89,6 @@ namespace RD_Server
             try
             {
                 stream = client.GetStream();
-                byte[] byteHeader = new byte[1], bytesLength = new byte[6], bytesData, bytesSend;
                 string infomation;
                 int bdlength;
                 dataFormat type;
@@ -108,9 +98,17 @@ namespace RD_Server
                     type = (dataFormat)Convert.ToInt32(Encoding.ASCII.GetString(byteHeader));
                     stream.Read(bytesLength, 0, 6);
                     bdlength = Convert.ToInt32(Encoding.ASCII.GetString(bytesLength));
-                    bytesData = ExactStream.ReadExactly(stream, bdlength);
+                    bytesData = RDFunctions.ReadExactly(stream, bdlength);
                     if (type == dataFormat.handle)
                     {
+                        Input[] inputs = new Input[] {RDFunctions.ConvertBytesToInput(bytesData)};
+                        if (inputs[0].type == (int)InputType.Mouse)
+                        {
+                            if (inputs[0].u.mi.dwFlags == (uint)MouseEventF.Absolute)
+                                User32.SetCursorPos(inputs[0].u.mi.dx * Screen.PrimaryScreen.Bounds.Width / 100, inputs[0].u.mi.dy * Screen.PrimaryScreen.Bounds.Height / 100);
+                        }
+                        else
+                            User32.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(Input)));
                     }
                     else
                     {
@@ -134,10 +132,10 @@ namespace RD_Server
                         else
                         {
                             timer.Stop();
-                            if (isOn)
+                            if (isConnected)
                             {
                                 bytesData = Encoding.ASCII.GetBytes("Quit");
-                                bytesSend = CreateBytesSend(bytesData, type);
+                                bytesSend = RDFunctions.CreateBytesSend(bytesData, type);
                                 stream.Write(bytesSend, 0, bytesSend.Length);
                             }
                             break;
@@ -156,12 +154,12 @@ namespace RD_Server
         {
             try
             {
-                Image screen = ScreenCapture.CapturingScreen();
+                Image screen = RDFunctions.Capture();
                 using (MemoryStream ms = new MemoryStream())
                 {
                     screen.Save(ms, ImageFormat.Jpeg);
                     byte[] bytesData = ms.ToArray();
-                    byte[] bytesSend = CreateBytesSend(bytesData, dataFormat.handle);
+                    byte[] bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.handle);
                     stream.Write(bytesSend, 0, bytesSend.Length);
                 }
             }
@@ -180,7 +178,7 @@ namespace RD_Server
                 {
                     timer.Stop();
                     byte[] bytesData = Encoding.ASCII.GetBytes("Quit");
-                    byte[] bytesSend = CreateBytesSend(bytesData, dataFormat.checkConnection);
+                    byte[] bytesSend = RDFunctions.CreateBytesSend(bytesData, dataFormat.checkConnection);
                     stream.Write(bytesSend, 0, bytesSend.Length);
                     Thread.Sleep(100);
                     stream.Close();

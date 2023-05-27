@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "rRvy696JMkujG253ygcGOpdkoNH/47k6MNBMVGGNPdYCO1nytyOxtyOHNH8xy+AbfN1W+5Rp6mbvEKmuWWN3wg==",
+  "dgSpecHash": "h8RDXT5hCCwnbft7hxICRNmDBU5v2GLn553byzTgc4ozJmeQfazwSl2/o1hkAi9aA5xR5U/qbKD66mfA9IrOzw==",
   "success": true,
-  "projectFilePath": "D:\\WorkSpace\\VSCode\\Csharp\\remoteDesktop\\RD_Server\\RD_Server.csproj",
+  "projectFilePath": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RD_server\\RD_Server.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

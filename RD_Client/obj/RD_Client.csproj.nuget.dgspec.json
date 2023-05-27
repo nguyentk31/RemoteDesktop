@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\WorkSpace\\VSCode\\Csharp\\remoteDesktop\\RD_Client\\RD_Client.csproj": {}
+    "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RD_Client\\RD_Client.csproj": {}
   },
   "projects": {
-    "D:\\WorkSpace\\VSCode\\Csharp\\remoteDesktop\\RD_Client\\RD_Client.csproj": {
+    "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RD_Client\\RD_Client.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\WorkSpace\\VSCode\\Csharp\\remoteDesktop\\RD_Client\\RD_Client.csproj",
+        "projectUniqueName": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RD_Client\\RD_Client.csproj",
         "projectName": "RD_Client",
-        "projectPath": "D:\\WorkSpace\\VSCode\\Csharp\\remoteDesktop\\RD_Client\\RD_Client.csproj",
+        "projectPath": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RD_Client\\RD_Client.csproj",
         "packagesPath": "C:\\Users\\Asus\\.nuget\\packages\\",
-        "outputPath": "D:\\WorkSpace\\VSCode\\Csharp\\remoteDesktop\\RD_Client\\obj\\",
+        "outputPath": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RD_Client\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Asus\\AppData\\Roaming\\NuGet\\NuGet.Config",
