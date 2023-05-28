@@ -28,11 +28,17 @@ namespace RemoteDesktop
             isConnected = false;
             isRunning = true;
             status = "SERVER IS RUNNING.";
+
+            // Timer dùng dể thiết lập thời gian gửi hình ảnh màn hình từ server đến client
+            // Ở đây timer được set là 100 mili giây
+            // nên cứ mỗi 100ms, Client sẽ nhận 1 hình ảnh màn hình từ Server
             timer = new System.Timers.Timer(100);
             timer.Elapsed += (sender, e) => SendImage();
             headerBytes = new byte[8];
         }
 
+// Bắt đầu hàm Listen() và load dữ liệu của Server, bao gồm: 
+// Ipv4 và password
         private void fServer_Load(object sender, EventArgs e)
         {
             new Thread(new ThreadStart(Listen)).Start();
@@ -40,11 +46,14 @@ namespace RemoteDesktop
             tbPW.Text = password;
         }
 
+// Thiết lập trạng thái khi bắt đầu lắng nghe kết nối
         private void fServer_Activated(object sender, EventArgs e)
         {
             tbST.Text = status;
         }
 
+// Được gọi khi tắt Server host, dùng để dùng việc gửi dữ liệu, gửi tín hiệu kết thúc đến Client
+// và đóng server.
         private void fServer_FormClosed(object sender, FormClosedEventArgs e)
         {
             try
@@ -70,6 +79,9 @@ namespace RemoteDesktop
             formParent.Show();
         }
 
+
+// Dùng để lắng nghe đến port và ip của Server,
+// giới hạn chỉ được 1 kết nối đến Server
         private void Listen()
         {
             try
@@ -101,6 +113,7 @@ namespace RemoteDesktop
             }
         }
 
+// Dùng để xử lý dữ liệu được gửi đến
         private void Monitor()
         {
             try
@@ -114,6 +127,8 @@ namespace RemoteDesktop
                     type = (dataFormat)BitConverter.ToInt32(headerBytes, 0);
                     dblength = BitConverter.ToInt32(headerBytes, 4);
                     dataBytes = RemoteDesktop.ReadExactly(stream, dblength);
+
+                    // Dữ liệu input
                     if (type == dataFormat.handle)
                     {
                         Input[] inputs = RemoteDesktop.HandleInputBytes(dataBytes);
@@ -121,6 +136,8 @@ namespace RemoteDesktop
                             continue;
                         User32.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(Input)));
                     }
+
+                    // Dữ liệu để xác thực
                     else if (dblength == password.Length)
                     {
                         infomation = Encoding.ASCII.GetString(dataBytes);
@@ -138,6 +155,8 @@ namespace RemoteDesktop
                             break;
                         }
                     }
+
+                    // Dữ liệu để kết thúc
                     else
                     {
                         timer.Stop();
@@ -159,6 +178,7 @@ namespace RemoteDesktop
             new Thread(new ThreadStart(Listen)).Start();
         }
 
+// Dùng để gửi hình ảnh đã được chụp đến Client
         private void SendImage()
         {
             try
