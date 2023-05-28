@@ -13,7 +13,7 @@ namespace RemoteDesktop
         private NetworkStream stream;
         private bool isActivated, isConnected;
         private Point mouse;
-        private byte[] headerByte, authBytes, dataBytes, bytesSent;
+        private byte[] headerBytes, dataBytes, bytesSent;
 
         public fClient(fConnection fParent, IPAddress rmIP, string pw)
         {
@@ -22,8 +22,7 @@ namespace RemoteDesktop
             remoteIP = rmIP;
             password = pw;
             isConnected = false;
-            headerByte = new byte[RemoteDesktop.headerLength];
-            authBytes = new byte[RemoteDesktop.authLength];
+            headerBytes = new byte[8];
         }
 
         private void fClient_Load(object sender, EventArgs e)
@@ -75,7 +74,7 @@ namespace RemoteDesktop
             {
                 dataBytes = RemoteDesktop.CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.down, (ushort)e.KeyCode);
                 bytesSent = RemoteDesktop.CreateBytesSent(dataBytes, dataFormat.handle);
-                stream.Write(bytesSent, 0, bytesSent.Length); 
+                stream.Write(bytesSent, 0, bytesSent.Length);
             }
             catch (Exception ex)
             {
@@ -105,11 +104,8 @@ namespace RemoteDesktop
         {
             if (isActivated)
                 Cursor.Hide();
-        }
-
-        private void pictureBox_MouseLeave(object sender, EventArgs e)
-        {
-            Cursor.Show();
+            else
+                Cursor.Show();
         }
 
         private void pictureBox_MouseMove(object sender, MouseEventArgs e)
@@ -205,8 +201,8 @@ namespace RemoteDesktop
         {
             try
             {
-                authBytes = RemoteDesktop.ReadExactly(stream, authBytes.Length);
-                if ((connectionStatus)Convert.ToInt32(Encoding.ASCII.GetString(authBytes)) == connectionStatus.success)
+                dataBytes = RemoteDesktop.ReadExactly(stream, 4);
+                if ((connectionStatus)BitConverter.ToInt32(dataBytes) == connectionStatus.success)
                     return (isConnected = true);
             }
             catch (Exception ex)
@@ -224,12 +220,11 @@ namespace RemoteDesktop
                 dataFormat type;
                 while (true)
                 {
-                    headerByte = RemoteDesktop.ReadExactly(stream, headerByte.Length);
-                    type = (dataFormat)Convert.ToInt32(Encoding.ASCII.GetString(headerByte));
+                    headerBytes = RemoteDesktop.ReadExactly(stream, headerBytes.Length);
+                    type = (dataFormat)BitConverter.ToInt32(headerBytes, 0);
                     if (type == dataFormat.handle)
                     {
-                        authBytes = RemoteDesktop.ReadExactly(stream, authBytes.Length);
-                        dblength = Convert.ToInt32(Encoding.ASCII.GetString(authBytes));
+                        dblength = BitConverter.ToInt32(headerBytes, 4);
                         dataBytes = RemoteDesktop.ReadExactly(stream, dblength);
                         using (MemoryStream ms = new MemoryStream(dataBytes))
                         {
@@ -241,7 +236,7 @@ namespace RemoteDesktop
                         if (isConnected)
                         {
                             isConnected = false;
-                            dataBytes = Encoding.ASCII.GetBytes("Quit");
+                            dataBytes = Encoding.ASCII.GetBytes("Quit/");
                             bytesSent = RemoteDesktop.CreateBytesSent(dataBytes, dataFormat.checkConnection);
                             stream.Write(bytesSent, 0, bytesSent.Length);
                         }
@@ -252,7 +247,8 @@ namespace RemoteDesktop
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
+                isConnected = false;
             }
-        } 
+        }
     }
 }

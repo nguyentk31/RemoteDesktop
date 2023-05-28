@@ -112,6 +112,7 @@
             Text = "Server";
             FormClosed += fServer_FormClosed;
             Load += fServer_Load;
+            Activated += fServer_Activated;
             ResumeLayout(false);
             PerformLayout();
         }

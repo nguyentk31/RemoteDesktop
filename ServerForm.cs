@@ -15,21 +15,22 @@ namespace RemoteDesktop
         private TcpClient client;
         private NetworkStream stream;
         private bool isConnected, isRunning;
-        private System.Timers.Timer timer;
-        private byte[] headerByte, authBytes, dataBytes, bytesSent;
+        private string status;
+        private static System.Timers.Timer timer;
+        private byte[] headerBytes, dataBytes, bytesSent;
 
         public fServer(Form1 fParent)
         {
             InitializeComponent();
             formParent = fParent;
             localIP = RemoteDesktop.GetIPv4();
-            password = RemoteDesktop.GeneratePassword(RemoteDesktop.passwordLength);
+            password = RemoteDesktop.GeneratePassword(10);
             isConnected = false;
             isRunning = true;
+            status = "SERVER IS RUNNING.";
             timer = new System.Timers.Timer(100);
             timer.Elapsed += (sender, e) => SendImage();
-            headerByte = new byte[RemoteDesktop.headerLength];
-            authBytes = new byte[RemoteDesktop.authLength];
+            headerBytes = new byte[8];
         }
 
         private void fServer_Load(object sender, EventArgs e)
@@ -37,6 +38,11 @@ namespace RemoteDesktop
             new Thread(new ThreadStart(Listen)).Start();
             tbIP.Text = localIP.ToString();
             tbPW.Text = password;
+        }
+
+        private void fServer_Activated(object sender, EventArgs e)
+        {
+            tbST.Text = status;
         }
 
         private void fServer_FormClosed(object sender, FormClosedEventArgs e)
@@ -47,7 +53,7 @@ namespace RemoteDesktop
                 if (isConnected)
                 {
                     timer.Stop();
-                    dataBytes = Encoding.ASCII.GetBytes("Quit");
+                    dataBytes = Encoding.ASCII.GetBytes("Quit/");
                     bytesSent = RemoteDesktop.CreateBytesSent(dataBytes, dataFormat.checkConnection);
                     stream.Write(bytesSent, 0, bytesSent.Length);
                     Thread.Sleep(500);
@@ -70,7 +76,7 @@ namespace RemoteDesktop
             {
                 listener = new TcpListener(localIP, RemoteDesktop.port);
                 listener.Start();
-                tbST.Text = "SERVER IS LISTENING.";
+                status = "SERVER IS LISTENING.";
                 while (isRunning)
                 {
                     if (!listener.Pending())
@@ -104,10 +110,9 @@ namespace RemoteDesktop
                 dataFormat type;
                 while (true)
                 {
-                    headerByte = RemoteDesktop.ReadExactly(stream, RemoteDesktop.headerLength);
-                    type = (dataFormat)Convert.ToInt32(Encoding.ASCII.GetString(headerByte));
-                    authBytes = RemoteDesktop.ReadExactly(stream, RemoteDesktop.authLength);
-                    dblength = Convert.ToInt32(Encoding.ASCII.GetString(authBytes));
+                    headerBytes = RemoteDesktop.ReadExactly(stream, headerBytes.Length);
+                    type = (dataFormat)BitConverter.ToInt32(headerBytes, 0);
+                    dblength = BitConverter.ToInt32(headerBytes, 4);
                     dataBytes = RemoteDesktop.ReadExactly(stream, dblength);
                     if (type == dataFormat.handle)
                     {
@@ -116,19 +121,19 @@ namespace RemoteDesktop
                             continue;
                         User32.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(Input)));
                     }
-                    else if (dblength == RemoteDesktop.passwordLength)
+                    else if (dblength == password.Length)
                     {
                         infomation = Encoding.ASCII.GetString(dataBytes);
                         if (infomation == password)
                         {
-                            tbST.Text = "SERVER IS CONNECTED.";
-                            bytesSent = Encoding.ASCII.GetBytes(((int)connectionStatus.success).ToString());
+                            status = "SERVER IS CONNECTED.";
+                            bytesSent = BitConverter.GetBytes((int)connectionStatus.success);
                             stream.Write(bytesSent, 0, bytesSent.Length);
                             timer.Start();
                         }
                         else
                         {
-                            bytesSent = Encoding.ASCII.GetBytes(((int)connectionStatus.failure).ToString());
+                            bytesSent = BitConverter.GetBytes((int)connectionStatus.failure);
                             stream.Write(bytesSent, 0, bytesSent.Length);
                             break;
                         }
@@ -138,7 +143,7 @@ namespace RemoteDesktop
                         timer.Stop();
                         if (isConnected)
                         {
-                            dataBytes = Encoding.ASCII.GetBytes("Quit");
+                            dataBytes = Encoding.ASCII.GetBytes("Quit/");
                             bytesSent = RemoteDesktop.CreateBytesSent(dataBytes, type);
                             stream.Write(bytesSent, 0, bytesSent.Length);
                         }

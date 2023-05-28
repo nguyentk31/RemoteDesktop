@@ -54,7 +54,6 @@
             pictureBox.TabStop = false;
             pictureBox.MouseDown += pictureBox_MouseDown;
             pictureBox.MouseEnter += pictureBox_MouseEnter;
-            pictureBox.MouseLeave += pictureBox_MouseLeave;
             pictureBox.MouseMove += pictureBox_MouseMove;
             pictureBox.MouseUp += pictureBox_MouseUp;
             // 

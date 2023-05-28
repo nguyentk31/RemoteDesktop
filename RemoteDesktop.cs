@@ -14,7 +14,7 @@ namespace RemoteDesktop
 
     internal static class RemoteDesktop
     {
-        internal static readonly int port = 2003, passwordLength = 8, headerLength = 1, authLength = 6;
+        internal static readonly int port = 2003;
 
         internal static IPAddress GetIPv4()
         {
@@ -28,11 +28,11 @@ namespace RemoteDesktop
 
         internal static string GeneratePassword(int pwLength)
         {
-            string tp = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            string tp = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             Random rnd = new Random();
             string pw = string.Empty;
             for (int i = 0; i < pwLength; i++)
-                pw += tp[rnd.Next(0, 61)];
+                pw += tp[rnd.Next(0, 35)];
             return pw;
         }
         
@@ -142,12 +142,10 @@ namespace RemoteDesktop
         internal static byte[] CreateBytesSent(byte[] dataBytes, dataFormat type)
         {
             int dblength = dataBytes.Length;
-            byte[] bytesSent = new byte[dblength + headerLength + authLength];
-            byte[] HeaderByte = Encoding.ASCII.GetBytes(((int)type).ToString());
-            byte[] AuthBytes = Encoding.ASCII.GetBytes(dblength.ToString());
-            Buffer.BlockCopy(HeaderByte, 0, bytesSent, 0, HeaderByte.Length);
-            Buffer.BlockCopy(AuthBytes, 0, bytesSent, headerLength, AuthBytes.Length);
-            Buffer.BlockCopy(dataBytes, 0, bytesSent, headerLength + authLength, dblength);
+            byte[] bytesSent = new byte[dblength + 8];
+            Buffer.BlockCopy(BitConverter.GetBytes((int)type), 0, bytesSent, 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(dblength), 0, bytesSent, 4, 4);
+            Buffer.BlockCopy(dataBytes, 0, bytesSent, 8, dblength);
             return bytesSent;
         }
 
