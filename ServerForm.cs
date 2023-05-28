@@ -6,7 +6,7 @@ using System.Text;
 
 namespace RemoteDesktop
 {
-    public partial class fServer : Form
+    internal partial class fServer : Form
     {
         private static Form1 formParent;
         private static IPAddress localIP;
@@ -19,7 +19,7 @@ namespace RemoteDesktop
         private static System.Timers.Timer timer;
         private static byte[] headerBytesRecv, dataBytesRecv, dataBytesSent;
 
-        public fServer(Form1 fParent)
+        internal fServer(Form1 fParent)
         {
             InitializeComponent();
             formParent = fParent;
@@ -53,7 +53,7 @@ namespace RemoteDesktop
                 if (isConnected)
                 {
                     timer.Stop();
-                    dataBytesSent = Encoding.ASCII.GetBytes("Quit/");
+                    dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
                     RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                     Thread.Sleep(500);
                     stream.Close();
@@ -142,7 +142,7 @@ namespace RemoteDesktop
                         timer.Stop();
                         if (isConnected)
                         {
-                            dataBytesSent = Encoding.ASCII.GetBytes("Quit/");
+                            dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
                             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                         }
                         break;

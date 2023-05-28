@@ -15,7 +15,7 @@ namespace RemoteDesktop
         private static Point mouse;
         private static byte[] headerBytesRecv, dataBytesRecv, dataBytesSent;
 
-        public fClient(fConnection fParent, IPAddress rmIP, string pw)
+        internal fClient(fConnection fParent, IPAddress rmIP, string pw)
         {
             InitializeComponent();
             formParent = fParent;
@@ -37,7 +37,7 @@ namespace RemoteDesktop
                 if (isConnected)
                 {
                     isConnected = false;
-                    dataBytesSent = Encoding.ASCII.GetBytes("Quit/");
+                    dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
                     RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                     Thread.Sleep(500);
                     stream.Close();
@@ -229,7 +229,7 @@ namespace RemoteDesktop
                         if (isConnected)
                         {
                             isConnected = false;
-                            dataBytesSent = Encoding.ASCII.GetBytes("Quit/");
+                            dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
                             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                         }
                         break;

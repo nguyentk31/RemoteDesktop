@@ -2,7 +2,7 @@
 
 namespace RemoteDesktop
 {
-    public partial class fConnection : Form
+    internal partial class fConnection : Form
     {
         Form1 formParent;
         public fConnection(Form1 fParent)
