@@ -11,7 +11,8 @@ namespace RemoteDesktop
     internal enum connectionStatus { success = 123456, failure = 654321 }
     internal enum inputType { mouse, key }
     internal enum inputEvent { up, down, move }
-
+    internal delegate void ConnectionChangedEvent(string message);
+    
     internal static class RemoteDesktop
     {
         internal static readonly int port = 2003;
@@ -24,6 +25,14 @@ namespace RemoteDesktop
                         if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
                             return ip.Address;
             throw new Exception("Can't find IPv4!");
+        }
+
+        internal static bool ValidateIPv4(string ip)
+        {
+            if (String.IsNullOrEmpty(ip))
+                return false;
+            string[] nums = ip.Split('.');
+            return nums.Length == 4 && nums.All(x => byte.TryParse(x, out _));
         }
 
         internal static string GeneratePassword(int pwLength)
@@ -71,6 +80,24 @@ namespace RemoteDesktop
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
             }
             return null;
+        }
+
+        internal static void SendImage(NetworkStream stream)
+        {
+            try
+            {
+                Image screen = RemoteDesktop.Capture();
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    screen.Save(ms, ImageFormat.Jpeg);
+                    byte[] dataBytesSent = ms.ToArray();
+                    RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception: of type {ex.GetType().Name}.\nMessage: {ex.Message}");
+            }
         }
 
         internal static byte[] CreateInputBytes(ushort iType, ushort iEvent, ushort iInfor1, ushort iInfor2 = 0)

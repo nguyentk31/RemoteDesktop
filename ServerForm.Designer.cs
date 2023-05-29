@@ -39,7 +39,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(42, 40);
+            label1.Location = new Point(45, 44);
             label1.Name = "label1";
             label1.Size = new Size(98, 19);
             label1.TabIndex = 0;
@@ -48,7 +48,7 @@
             // tbIP
             // 
             tbIP.Cursor = Cursors.IBeam;
-            tbIP.Location = new Point(42, 62);
+            tbIP.Location = new Point(45, 66);
             tbIP.Name = "tbIP";
             tbIP.ReadOnly = true;
             tbIP.Size = new Size(183, 26);
@@ -58,7 +58,7 @@
             // tbPW
             // 
             tbPW.Cursor = Cursors.IBeam;
-            tbPW.Location = new Point(144, 159);
+            tbPW.Location = new Point(45, 134);
             tbPW.Name = "tbPW";
             tbPW.ReadOnly = true;
             tbPW.Size = new Size(183, 26);
@@ -68,7 +68,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(144, 137);
+            label2.Location = new Point(45, 112);
             label2.Name = "label2";
             label2.Size = new Size(97, 19);
             label2.TabIndex = 2;
@@ -77,7 +77,7 @@
             // tbST
             // 
             tbST.Cursor = Cursors.IBeam;
-            tbST.Location = new Point(260, 239);
+            tbST.Location = new Point(256, 227);
             tbST.Name = "tbST";
             tbST.ReadOnly = true;
             tbST.Size = new Size(183, 26);
@@ -87,7 +87,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(260, 217);
+            label3.Location = new Point(256, 205);
             label3.Name = "label3";
             label3.Size = new Size(67, 19);
             label3.TabIndex = 4;
@@ -110,9 +110,8 @@
             MaximizeBox = false;
             Name = "fServer";
             Text = "Server";
-            FormClosed += fServer_FormClosed;
+            FormClosing += fServer_FormClosing;
             Load += fServer_Load;
-            Activated += fServer_Activated;
             ResumeLayout(false);
             PerformLayout();
         }

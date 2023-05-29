@@ -38,7 +38,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(29, 26);
+            label1.Location = new Point(37, 28);
             label1.Name = "label1";
             label1.Size = new Size(165, 19);
             label1.TabIndex = 0;
@@ -47,7 +47,7 @@
             // tbIP
             // 
             tbIP.Cursor = Cursors.IBeam;
-            tbIP.Location = new Point(29, 48);
+            tbIP.Location = new Point(37, 50);
             tbIP.Name = "tbIP";
             tbIP.Size = new Size(207, 26);
             tbIP.TabIndex = 1;
@@ -55,7 +55,7 @@
             // tbPW
             // 
             tbPW.Cursor = Cursors.IBeam;
-            tbPW.Location = new Point(29, 113);
+            tbPW.Location = new Point(37, 115);
             tbPW.Name = "tbPW";
             tbPW.Size = new Size(207, 26);
             tbPW.TabIndex = 3;
@@ -63,7 +63,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(29, 91);
+            label2.Location = new Point(37, 93);
             label2.Name = "label2";
             label2.Size = new Size(97, 19);
             label2.TabIndex = 2;
@@ -71,9 +71,9 @@
             // 
             // btConnect
             // 
-            btConnect.Location = new Point(318, 145);
+            btConnect.Location = new Point(37, 184);
             btConnect.Name = "btConnect";
-            btConnect.Size = new Size(150, 150);
+            btConnect.Size = new Size(407, 96);
             btConnect.TabIndex = 4;
             btConnect.TabStop = false;
             btConnect.Text = "CONNECT";
@@ -97,7 +97,6 @@
             MaximizeBox = false;
             Name = "fConnection";
             Text = "Connection";
-            FormClosed += fConnection_FormClosed;
             ResumeLayout(false);
             PerformLayout();
         }
