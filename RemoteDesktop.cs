@@ -16,8 +16,12 @@ namespace RemoteDesktop
     {
         internal static readonly int port = 2003;
 
+// Lấy địa chỉ IPv4 của Server host
         internal static IPAddress GetIPv4()
         {
+            // Hàm sẽ kiểm tra tất cả các network interface mà Server kết nối
+            // và lấy ra địa chỉ IP của LAN hoặc VPN
+            // với điệu kiện là có địa chỉ Gateway và có trạng thái đang bật
             foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
                 if (ni.GetIPProperties().GatewayAddresses.Count > 0 && ni.OperationalStatus == OperationalStatus.Up)
                     foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
@@ -26,6 +30,7 @@ namespace RemoteDesktop
             throw new Exception("Can't find IPv4!");
         }
 
+// Tạo mật khẩu ngẫu nhiên cho Server Host
         internal static string GeneratePassword(int pwLength)
         {
             string tp = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -36,6 +41,10 @@ namespace RemoteDesktop
             return pw;
         }
         
+// Chụp một tấm hình của màn hình Server dưới dạng Bitmap 
+//
+// Bitmap là hình ảnh có dạng mảnh hóa, nghĩa là ảnh tạo từ các điểm ảnh
+// Mỗi điểm ảnh chứa 1 thông số màu nhất định được xếp với nhau theo lưới sẽ tạo thành ảnh bitmap
         internal static Image Capture()
         {
             try
@@ -45,6 +54,8 @@ namespace RemoteDesktop
                 using (Graphics graphics = Graphics.FromImage(bitmap))
                 {
                     graphics.CopyFromScreen(bound.X, bound.Y, 0, 0, bound.Size, CopyPixelOperation.SourceCopy);
+                    
+                    // Lưu lại trạng thái con trỏ và vẽ lại lên trên tấm hình nếu con trỏ xuất hiện
                     CURSORINFO cursorInfo;
                     cursorInfo.cbSize = Marshal.SizeOf(typeof(CURSORINFO));
                     if (User32.GetCursorInfo(out cursorInfo))
@@ -73,20 +84,33 @@ namespace RemoteDesktop
             return null;
         }
 
+// Client - Chuyển các tín hiệu input từ bit thành dữ liệu dưới dạng mảng Byte
         internal static byte[] CreateInputBytes(ushort iType, ushort iEvent, ushort iInfor1, ushort iInfor2 = 0)
         {
+            // Chuyển thông tin của tín hiệu thành dữ liệu byte và lưu vào một mảng 8 bytes
             byte[] inputBytes = new byte[8];
+
+            // Hai byte đầu chứa loại input (chuột, bàn phím)
             Buffer.BlockCopy(BitConverter.GetBytes(iType), 0, inputBytes, 0, 2);
+
+            // Byte thứ 3 và 4 chứa thông tin sự kiện của tín hiệu đó (up, down, move, ...)
             Buffer.BlockCopy(BitConverter.GetBytes(iEvent), 0, inputBytes, 2, 2);
+
+            // Byte thứ 5 và 6 chứa thông tin thứ nhất của tín hiệu (tọa độ x, y,...)
             Buffer.BlockCopy(BitConverter.GetBytes(iInfor1), 0, inputBytes, 4, 2);
+
+            // Byte thứ 7 và 8 chứa thông tin thứ hai của tín hiệu (tọa độ x, y,...)
             Buffer.BlockCopy(BitConverter.GetBytes(iInfor2), 0, inputBytes, 6, 2);
             return inputBytes;
         }
 
+// 
         internal static Input[] HandleInputBytes(byte[] iBytes)
         {
             Input input = new Input();
+
             input.u.ki.dwExtraInfo = User32.GetMessageExtraInfo();
+
             try
             {
                 ushort iType = BitConverter.ToUInt16(iBytes, 0),
