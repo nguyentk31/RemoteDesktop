@@ -163,14 +163,21 @@ namespace RemoteDesktop
             return new Input[] {input};
         }
 
-        internal static byte[] CreateBytesSent(byte[] dataBytes, dataFormat type)
+        internal static void SendDataBytes(byte[] dataBytes, dataFormat type, NetworkStream stream)
         {
-            int dblength = dataBytes.Length;
-            byte[] bytesSent = new byte[dblength + 8];
-            Buffer.BlockCopy(BitConverter.GetBytes((int)type), 0, bytesSent, 0, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(dblength), 0, bytesSent, 4, 4);
-            Buffer.BlockCopy(dataBytes, 0, bytesSent, 8, dblength);
-            return bytesSent;
+            try
+            {
+                int dblength = dataBytes.Length;
+                byte[] bytesSent = new byte[dblength + 8];
+                Buffer.BlockCopy(BitConverter.GetBytes((int)type), 0, bytesSent, 0, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(dblength), 0, bytesSent, 4, 4);
+                Buffer.BlockCopy(dataBytes, 0, bytesSent, 8, dblength);
+                stream.Write(bytesSent, 0, bytesSent.Length);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
+            }
         }
 
         internal static byte[] ReadExactly(NetworkStream stream, int length)

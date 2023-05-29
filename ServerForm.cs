@@ -6,20 +6,20 @@ using System.Text;
 
 namespace RemoteDesktop
 {
-    public partial class fServer : Form
+    internal partial class fServer : Form
     {
-        Form1 formParent;
-        private readonly IPAddress localIP;
-        private readonly string password;
-        private TcpListener listener;
-        private TcpClient client;
-        private NetworkStream stream;
-        private bool isConnected, isRunning;
-        private string status;
+        private static Form1 formParent;
+        private static IPAddress localIP;
+        private static string password;
+        private static TcpListener listener;
+        private static TcpClient client;
+        private static NetworkStream stream;
+        private static bool isConnected, isRunning;
+        private static string status;
         private static System.Timers.Timer timer;
-        private byte[] headerBytes, dataBytes, bytesSent;
+        private static byte[] headerBytesRecv, dataBytesRecv, dataBytesSent;
 
-        public fServer(Form1 fParent)
+        internal fServer(Form1 fParent)
         {
             InitializeComponent();
             formParent = fParent;
@@ -34,7 +34,7 @@ namespace RemoteDesktop
             // nên cứ mỗi 100ms, Client sẽ nhận 1 hình ảnh màn hình từ Server
             timer = new System.Timers.Timer(100);
             timer.Elapsed += (sender, e) => SendImage();
-            headerBytes = new byte[8];
+            headerBytesRecv = new byte[8];
         }
 
 // Bắt đầu hàm Listen() và load dữ liệu của Server, bao gồm: 
@@ -62,9 +62,8 @@ namespace RemoteDesktop
                 if (isConnected)
                 {
                     timer.Stop();
-                    dataBytes = Encoding.ASCII.GetBytes("Quit/");
-                    bytesSent = RemoteDesktop.CreateBytesSent(dataBytes, dataFormat.checkConnection);
-                    stream.Write(bytesSent, 0, bytesSent.Length);
+                    dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
+                    RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                     Thread.Sleep(500);
                     stream.Close();
                     client.Close();
@@ -123,15 +122,15 @@ namespace RemoteDesktop
                 dataFormat type;
                 while (true)
                 {
-                    headerBytes = RemoteDesktop.ReadExactly(stream, headerBytes.Length);
-                    type = (dataFormat)BitConverter.ToInt32(headerBytes, 0);
-                    dblength = BitConverter.ToInt32(headerBytes, 4);
-                    dataBytes = RemoteDesktop.ReadExactly(stream, dblength);
-
                     // Dữ liệu input
+                    headerBytesRecv = RemoteDesktop.ReadExactly(stream, headerBytesRecv.Length);
+                    type = (dataFormat)BitConverter.ToInt32(headerBytesRecv, 0);
+                    dblength = BitConverter.ToInt32(headerBytesRecv, 4);
+                    dataBytesRecv = RemoteDesktop.ReadExactly(stream, dblength);
+
                     if (type == dataFormat.handle)
                     {
-                        Input[] inputs = RemoteDesktop.HandleInputBytes(dataBytes);
+                        Input[] inputs = RemoteDesktop.HandleInputBytes(dataBytesRecv);
                         if (inputs[0].u.mi.dwFlags == (uint)MouseEventF.Absolute)
                             continue;
                         User32.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(Input)));
@@ -140,18 +139,18 @@ namespace RemoteDesktop
                     // Dữ liệu để xác thực
                     else if (dblength == password.Length)
                     {
-                        infomation = Encoding.ASCII.GetString(dataBytes);
+                        infomation = Encoding.ASCII.GetString(dataBytesRecv);
                         if (infomation == password)
                         {
                             status = "SERVER IS CONNECTED.";
-                            bytesSent = BitConverter.GetBytes((int)connectionStatus.success);
-                            stream.Write(bytesSent, 0, bytesSent.Length);
+                            dataBytesSent = BitConverter.GetBytes((int)connectionStatus.success);
+                            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                             timer.Start();
                         }
                         else
                         {
-                            bytesSent = BitConverter.GetBytes((int)connectionStatus.failure);
-                            stream.Write(bytesSent, 0, bytesSent.Length);
+                            dataBytesSent = BitConverter.GetBytes((int)connectionStatus.failure);
+                            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                             break;
                         }
                     }
@@ -162,9 +161,8 @@ namespace RemoteDesktop
                         timer.Stop();
                         if (isConnected)
                         {
-                            dataBytes = Encoding.ASCII.GetBytes("Quit/");
-                            bytesSent = RemoteDesktop.CreateBytesSent(dataBytes, type);
-                            stream.Write(bytesSent, 0, bytesSent.Length);
+                            dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
+                            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                         }
                         break;
                     }
@@ -187,9 +185,8 @@ namespace RemoteDesktop
                 using (MemoryStream ms = new MemoryStream())
                 {
                     screen.Save(ms, ImageFormat.Jpeg);
-                    dataBytes = ms.ToArray();
-                    bytesSent = RemoteDesktop.CreateBytesSent(dataBytes, dataFormat.handle);
-                    stream.Write(bytesSent, 0, bytesSent.Length);
+                    dataBytesSent = ms.ToArray();
+                    RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
                 }
             }
             catch (Exception ex)
