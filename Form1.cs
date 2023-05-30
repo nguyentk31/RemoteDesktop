@@ -9,14 +9,18 @@ namespace RemoteDesktop
 
         private void btServer_Click(object sender, EventArgs e)
         {
-            Hide();
-            new fServer(this).ShowDialog();
+            this.Hide();
+            using (fServer server = new fServer())
+                server.ShowDialog();
+            this.Show();
         }
 
         private void btClient_Click(object sender, EventArgs e)
         {
-            Hide();
-            new fConnection(this).ShowDialog();
+            this.Hide();
+            using (fConnection connection = new fConnection())
+                connection.ShowDialog();
+            this.Show();
         }
     }
 }

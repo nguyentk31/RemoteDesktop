@@ -35,7 +35,7 @@
             // btServer
             // 
             btServer.Font = new Font("Times New Roman", 20F, FontStyle.Regular, GraphicsUnit.Point);
-            btServer.Location = new Point(27, 13);
+            btServer.Location = new Point(259, 98);
             btServer.Margin = new Padding(4);
             btServer.Name = "btServer";
             btServer.Size = new Size(200, 200);
@@ -48,7 +48,7 @@
             // btClient
             // 
             btClient.Font = new Font("Times New Roman", 20F, FontStyle.Regular, GraphicsUnit.Point);
-            btClient.Location = new Point(257, 98);
+            btClient.Location = new Point(29, 13);
             btClient.Margin = new Padding(4);
             btClient.Name = "btClient";
             btClient.Size = new Size(200, 200);

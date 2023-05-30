@@ -6,23 +6,29 @@ namespace RemoteDesktop
 {
     internal partial class fClient : Form
     {
-        private static fConnection formParent;
-        private static IPAddress remoteIP;
-        private static string password;
-        private static TcpClient client;
-        private static NetworkStream stream;
-        private static bool isActivated, isConnected;
-        private static Point mouse;
-        private static byte[] headerBytesRecv, dataBytesRecv, dataBytesSent;
+        private IPAddress remoteIP;
+        private string password;
+        private TcpClient client;
+        private NetworkStream stream;
+        private bool isActivated, isConnected, isMouseShow;
+        private Point mouse;
+        private byte[] headerBytesRecv, dataBytesRecv, dataBytesSent;
+        private event ConnectionChangedEvent connectionClosed;
 
-        internal fClient(fConnection fParent, IPAddress rmIP, string pw)
+        internal fClient(IPAddress rmIP, string pw)
         {
             InitializeComponent();
-            formParent = fParent;
             remoteIP = rmIP;
             password = pw;
             isConnected = false;
+            isMouseShow = true;
             headerBytesRecv = new byte[8];
+            connectionClosed += CloseForm;
+        }
+
+        private void CloseForm(string msg)
+        {
+            Close();
         }
 
         private void fClient_Load(object sender, EventArgs e)
@@ -34,42 +40,38 @@ namespace RemoteDesktop
         {
             try
             {
+                if (!isMouseShow)
+                    Cursor.Show();
                 if (isConnected)
                 {
                     isConnected = false;
                     dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
                     RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
-                    Thread.Sleep(500);
-                    stream.Close();
-                    client.Close();
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
             }
-            formParent.Show();
         }
 
         private void fClient_Activated(object sender, EventArgs e)
         {
-            if (!isConnected)
-                Close();
             isActivated = true;
         }
 
         private void fClient_Deactivate(object sender, EventArgs e)
         {
-            if (!isConnected)
-                Close();
             isActivated = false;
-            Cursor.Show();
+            if (!isMouseShow)
+            {
+                isMouseShow = false;
+                Cursor.Show();
+            }
         }
 
         private void textBox_KeyDown(object sender, KeyEventArgs e)
         {
-            if (!isConnected)
-                Close();
             try
             {
                 dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.down, (ushort)e.KeyCode);
@@ -78,14 +80,11 @@ namespace RemoteDesktop
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-                Close();
             }
         }
 
         private void textBox_KeyUp(object sender, KeyEventArgs e)
         {
-            if (!isConnected)
-                Close();
             try
             {
                 dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.up, (ushort)e.KeyCode);
@@ -94,20 +93,29 @@ namespace RemoteDesktop
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-                Close();
             }
         }
 
         private void pictureBox_MouseEnter(object sender, EventArgs e)
         {
-            if (isActivated)
+            if (isActivated && isMouseShow)
+            {
+                isMouseShow = false;
                 Cursor.Hide();
+            }
+        }
+
+        private void pictureBox_MouseLeave(object sender, EventArgs e)
+        {
+            if (isActivated && !isMouseShow)
+            {
+                isMouseShow = true;
+                Cursor.Show();
+            }
         }
 
         private void pictureBox_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!isConnected)
-                Close();
             if (!isActivated)
                 return;
             try
@@ -122,14 +130,11 @@ namespace RemoteDesktop
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-                Close();
             }
         }
 
         private void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
-            if (!isConnected)
-                Close();
             if (!isActivated)
                 return;
             try
@@ -142,14 +147,11 @@ namespace RemoteDesktop
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-                Close();
             }
         }
 
         private void pictureBox_MouseUp(object sender, MouseEventArgs e)
         {
-            if (!isConnected)
-                Close();
             if (!isActivated)
                 return;
             try
@@ -162,7 +164,6 @@ namespace RemoteDesktop
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-                Close();
             }
         }
 
@@ -177,26 +178,23 @@ namespace RemoteDesktop
 
                 // Kết nối với ip và port của Server host
                 client.Connect(remoteIP, RemoteDesktop.port);
-
-                // Sau khi kết nối thành công sẽ tạo ra một luồng (Stream) 
-                // để đọc password và chuyển thành dữ liệu dạng byte để kiểm tra
-                if (client.Connected)
-                {
-                    // Mã hóa password thành byte và gửi đến Server host
-                    stream = client.GetStream();
-                    dataBytesSent = Encoding.ASCII.GetBytes(password);
-                    RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
-                    if (Authenticate())
-                        return 1;
-                    else
-                        return 0;
-                }
+                if (!client.Connected)
+                    throw new Exception();
+                stream = client.GetStream();
+                dataBytesSent = Encoding.ASCII.GetBytes(password);
+                RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
+                if (Authenticate())
+                    return 1;
+                stream.Close();
+                client.Close();
+                return 0;
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
+                stream.Close(5000);
+                client.Close();
+                return -1;
             }
-            return -1;
         }
 
 // Hàm Authenticate dùng để đọc và kiểm tra password
@@ -235,14 +233,21 @@ namespace RemoteDesktop
                         {
                             pictureBox.Image = Image.FromStream(ms);
                         }
-                    }
+                    } 
                     else
                     {
                         if (isConnected)
                         {
                             isConnected = false;
+                            connectionClosed?.Invoke("quit");
+                            Thread.Sleep(5000);
                             dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
                             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
+                        }
+                        else
+                        {
+                            stream.Close();
+                            client.Close();
                         }
                         break;
                     }
@@ -251,7 +256,6 @@ namespace RemoteDesktop
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-                isConnected = false;
             }
         }
     }

@@ -8,33 +8,24 @@ namespace RemoteDesktop
 {
     internal partial class fServer : Form
     {
-        private static Form1 formParent;
-        private static IPAddress localIP;
-        private static string password;
-        private static TcpListener listener;
-        private static TcpClient client;
-        private static NetworkStream stream;
-        private static bool isConnected, isRunning;
-        private static string status;
-        private static System.Timers.Timer timer;
-        private static byte[] headerBytesRecv, dataBytesRecv, dataBytesSent;
+        private static IPAddress localIP = RemoteDesktop.GetIPv4();
+        private static string password = RemoteDesktop.GeneratePassword(5);
+        private TcpListener listener;
+        private TcpClient client;
+        private NetworkStream stream;
+        private bool isConnected, isRunning;
+        private System.Timers.Timer timer;
+        private byte[] headerBytesRecv, dataBytesRecv, dataBytesSent;
+        private event ConnectionChangedEvent statusChanged;
 
-        internal fServer(Form1 fParent)
+
+        internal fServer()
         {
             InitializeComponent();
-            formParent = fParent;
-            localIP = RemoteDesktop.GetIPv4();
-            password = RemoteDesktop.GeneratePassword(10);
             isConnected = false;
             isRunning = true;
-            status = "SERVER IS RUNNING.";
-
-            // Timer dùng dể thiết lập thời gian gửi hình ảnh màn hình từ server đến client
-            // Ở đây timer được set là 100 mili giây
-            // nên cứ mỗi 100ms, Client sẽ nhận 1 hình ảnh màn hình từ Server
-            timer = new System.Timers.Timer(100);
-            timer.Elapsed += (sender, e) => SendImage();
             headerBytesRecv = new byte[8];
+            statusChanged += PublishStatus;
         }
 
 // Bắt đầu hàm Listen() và load dữ liệu của Server, bao gồm: 
@@ -46,10 +37,9 @@ namespace RemoteDesktop
             tbPW.Text = password;
         }
 
-// Thiết lập trạng thái khi bắt đầu lắng nghe kết nối
-        private void fServer_Activated(object sender, EventArgs e)
+        private void PublishStatus(string st)
         {
-            tbST.Text = status;
+            tbST.Text = st;
         }
 
 // Được gọi khi tắt Server host, dùng để dùng việc gửi dữ liệu, gửi tín hiệu kết thúc đến Client
@@ -58,27 +48,23 @@ namespace RemoteDesktop
         {
             try
             {
-                isRunning = false;
                 if (isConnected)
                 {
-                    timer.Stop();
+                    timer.Dispose();
+                    isConnected = false;
                     dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
                     RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
-                    Thread.Sleep(500);
-                    stream.Close();
-                    client.Close();
                 }
                 else
-                    listener.Stop();
+                    isRunning = false;
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception: of type {ex.GetType().Name}.\nMessage: {ex.Message}");
             }
-            formParent.Show();
         }
 
-
+// Thiết lập trạng thái khi bắt đầu lắng nghe kết nối
 // Dùng để lắng nghe đến port và ip của Server,
 // giới hạn chỉ được 1 kết nối đến Server
         private void Listen()
@@ -87,7 +73,7 @@ namespace RemoteDesktop
             {
                 listener = new TcpListener(localIP, RemoteDesktop.port);
                 listener.Start();
-                status = "SERVER IS LISTENING.";
+                statusChanged?.Invoke("SERVER IS LISTENING.");
                 while (isRunning)
                 {
                     if (!listener.Pending())
@@ -99,12 +85,13 @@ namespace RemoteDesktop
                     {
                         client = listener.AcceptTcpClient();
                         stream = client.GetStream();
-                        isConnected = true;
                         listener.Stop();
                         new Thread(new ThreadStart(Monitor)).Start();
                         break;
                     }
                 }
+                if (!isRunning)
+                    listener.Stop();
             }
             catch (Exception ex)
             {
@@ -117,7 +104,6 @@ namespace RemoteDesktop
         {
             try
             {
-                string infomation;
                 int dblength;
                 dataFormat type;
                 while (true)
@@ -127,7 +113,7 @@ namespace RemoteDesktop
                     type = (dataFormat)BitConverter.ToInt32(headerBytesRecv, 0);
                     dblength = BitConverter.ToInt32(headerBytesRecv, 4);
                     dataBytesRecv = RemoteDesktop.ReadExactly(stream, dblength);
-
+                    // Khi nhận gói tin input
                     if (type == dataFormat.handle)
                     {
                         Input[] inputs = RemoteDesktop.HandleInputBytes(dataBytesRecv);
@@ -135,16 +121,21 @@ namespace RemoteDesktop
                             continue;
                         User32.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(Input)));
                     }
-
-                    // Dữ liệu để xác thực
+                    // Khi nhận gói tin kết nối
                     else if (dblength == password.Length)
                     {
-                        infomation = Encoding.ASCII.GetString(dataBytesRecv);
+                        string infomation = Encoding.ASCII.GetString(dataBytesRecv);
                         if (infomation == password)
                         {
-                            status = "SERVER IS CONNECTED.";
+                            isConnected = true;
+                            statusChanged?.Invoke("SERVER IS CONNECTED.");
                             dataBytesSent = BitConverter.GetBytes((int)connectionStatus.success);
                             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
+                            // Timer dùng dể thiết lập thời gian gửi hình ảnh màn hình từ server đến client
+                            // Ở đây timer được set là 100 mili giây
+                            // nên cứ mỗi 100ms, Client sẽ nhận 1 hình ảnh màn hình từ Server
+                            timer = new System.Timers.Timer(100);
+                            timer.Elapsed += (sender, e) => RemoteDesktop.SendImage(stream);
                             timer.Start();
                         }
                         else
@@ -154,44 +145,28 @@ namespace RemoteDesktop
                             break;
                         }
                     }
-
-                    // Dữ liệu để kết thúc
-                    else
+                    // Khi nhận gói tin quit
+                    else if (isConnected)
                     {
-                        timer.Stop();
-                        if (isConnected)
-                        {
-                            dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
-                            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
-                        }
+                        timer.Dispose();
+                        isConnected = false;
+                        Thread.Sleep(5000);
+                        dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
+                        RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                         break;
                     }
+                    else
+                    {
+                        stream.Close();
+                        client.Close();
+                        return;
+                    }
                 }
+                // Khởi động lại server
+                new Thread(new ThreadStart(Listen)).Start();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Exception: of type {ex.GetType().Name}.\nMessage: {ex.Message}");
-            }
-            isConnected = false;
-            new Thread(new ThreadStart(Listen)).Start();
-        }
-
-// Dùng để gửi hình ảnh đã được chụp đến Client
-        private void SendImage()
-        {
-            try
-            {
-                Image screen = RemoteDesktop.Capture();
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    screen.Save(ms, ImageFormat.Jpeg);
-                    dataBytesSent = ms.ToArray();
-                    RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
-                }
-            }
-            catch (Exception ex)
-            {
-                timer.Stop();
                 MessageBox.Show($"Exception: of type {ex.GetType().Name}.\nMessage: {ex.Message}");
             }
         }
