@@ -11,7 +11,9 @@ namespace RemoteDesktop
         {
             this.Hide();
             using (fServer server = new fServer())
+            {
                 server.ShowDialog();
+            }
             this.Show();
         }
 
@@ -19,7 +21,9 @@ namespace RemoteDesktop
         {
             this.Hide();
             using (fConnection connection = new fConnection())
+            {
                 connection.ShowDialog();
+            }
             this.Show();
         }
     }

@@ -10,7 +10,7 @@ namespace RemoteDesktop
         private string password;
         private TcpClient client;
         private NetworkStream stream;
-        private bool isActivated, isConnected, isMouseShow;
+        private static bool isActivated, isConnected, isMouseShow;
         private Point mouse;
         private byte[] headerBytesRecv, dataBytesRecv, dataBytesSent;
         private event ConnectionChangedEvent connectionClosed;
@@ -38,29 +38,22 @@ namespace RemoteDesktop
 
         private void fClient_FormClosed(object sender, FormClosedEventArgs e)
         {
-            try
+            if (!isMouseShow)
+                Cursor.Show();
+            if (isConnected)
             {
-                if (!isMouseShow)
-                    Cursor.Show();
-                if (isConnected)
-                {
-                    isConnected = false;
-                    dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
-                    RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
+                isConnected = false;
+                dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
+                RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
             }
         }
 
-        private void fClient_Activated(object sender, EventArgs e)
+        private static void fClient_Activated(object sender, EventArgs e)
         {
             isActivated = true;
         }
 
-        private void fClient_Deactivate(object sender, EventArgs e)
+        private static void fClient_Deactivate(object sender, EventArgs e)
         {
             isActivated = false;
             if (!isMouseShow)
@@ -72,31 +65,17 @@ namespace RemoteDesktop
 
         private void textBox_KeyDown(object sender, KeyEventArgs e)
         {
-            try
-            {
-                dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.down, (ushort)e.KeyCode);
-                RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-            }
+            dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.down, (ushort)e.KeyCode);
+            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
         }
 
         private void textBox_KeyUp(object sender, KeyEventArgs e)
         {
-            try
-            {
-                dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.up, (ushort)e.KeyCode);
-                RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-            }
+            dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.up, (ushort)e.KeyCode);
+            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
         }
 
-        private void pictureBox_MouseEnter(object sender, EventArgs e)
+        private static void pictureBox_MouseEnter(object sender, EventArgs e)
         {
             if (isActivated && isMouseShow)
             {
@@ -105,7 +84,7 @@ namespace RemoteDesktop
             }
         }
 
-        private void pictureBox_MouseLeave(object sender, EventArgs e)
+        private static void pictureBox_MouseLeave(object sender, EventArgs e)
         {
             if (isActivated && !isMouseShow)
             {
@@ -118,53 +97,31 @@ namespace RemoteDesktop
         {
             if (!isActivated)
                 return;
-            try
-            {
-                mouse = this.PointToClient(Cursor.Position);
-                ushort x = (ushort)(mouse.X * 10000 / (this.Size.Width - 20));
-                ushort y = (ushort)(mouse.Y * 10000 / (this.Size.Height - 40));
-                dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.move, x, y);
-                RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-            }
+            mouse = this.PointToClient(Cursor.Position);
+            ushort x = (ushort)(mouse.X * 10000 / (this.Size.Width - 20));
+            ushort y = (ushort)(mouse.Y * 10000 / (this.Size.Height - 40));
+            dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.move, x, y);
+            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
         }
 
         private void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
             if (!isActivated)
                 return;
-            try
-            {
-                ushort x = Convert.ToUInt16(e.Button == MouseButtons.Left);
-                ushort y = Convert.ToUInt16(e.Button == MouseButtons.Right);
-                dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.down, x, y);
-                RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-            }
+            ushort x = Convert.ToUInt16(e.Button == MouseButtons.Left);
+            ushort y = Convert.ToUInt16(e.Button == MouseButtons.Right);
+            dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.down, x, y);
+            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
         }
 
         private void pictureBox_MouseUp(object sender, MouseEventArgs e)
         {
             if (!isActivated)
                 return;
-            try
-            {
-                ushort x = Convert.ToUInt16(e.Button == MouseButtons.Left);
-                ushort y = Convert.ToUInt16(e.Button == MouseButtons.Right);
-                dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.up, x, y);
-                RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-            }
+            ushort x = Convert.ToUInt16(e.Button == MouseButtons.Left);
+            ushort y = Convert.ToUInt16(e.Button == MouseButtons.Right);
+            dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.up, x, y);
+            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
         }
 
 // Hàm được gọi khi nhấn nút Connect bên phía Client host để kết nối với Server host
@@ -200,16 +157,9 @@ namespace RemoteDesktop
 // Hàm Authenticate dùng để đọc và kiểm tra password
         private bool Authenticate()
         {
-            try
-            {
-                dataBytesRecv = RemoteDesktop.ReadExactly(stream, 12);
-                if ((connectionStatus)BitConverter.ToInt32(dataBytesRecv, 8) == connectionStatus.success)
-                    return (isConnected = true);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
-            }
+            dataBytesRecv = RemoteDesktop.ReadExactly(stream, 12);
+            if ((connectionStatus)BitConverter.ToInt32(dataBytesRecv, 8) == connectionStatus.success)
+                return (isConnected = true);
             return false;
         }
 

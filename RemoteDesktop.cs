@@ -89,8 +89,8 @@ namespace RemoteDesktop
             catch (Exception ex)
             {
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
+                return null;
             }
-            return null;
         }
 
         internal static void SendImage(NetworkStream stream)
@@ -134,58 +134,49 @@ namespace RemoteDesktop
 // 
         internal static Input[] HandleInputBytes(byte[] iBytes)
         {
+            ushort iType = BitConverter.ToUInt16(iBytes, 0),
+                iEvent = BitConverter.ToUInt16(iBytes, 2),
+                iInfor1 = BitConverter.ToUInt16(iBytes, 4),
+                iInfor2 = BitConverter.ToUInt16(iBytes, 6);  
             Input input = new Input();
-
             input.u.ki.dwExtraInfo = User32.GetMessageExtraInfo();
-
-            try
+            if (iType == (ushort)InputType.Keyboard)
             {
-                ushort iType = BitConverter.ToUInt16(iBytes, 0),
-                    iEvent = BitConverter.ToUInt16(iBytes, 2),
-                    iInfor1 = BitConverter.ToUInt16(iBytes, 4),
-                    iInfor2 = BitConverter.ToUInt16(iBytes, 6);  
-                if (iType == (ushort)InputType.Keyboard)
+                input.type = (int)InputType.Keyboard;
+                input.u.ki.wVk = iInfor1;
+                if (iEvent == (ushort)inputEvent.down)
+                    input.u.ki.dwFlags = (uint)KeyEventF.KeyDown;
+                else
+                    input.u.ki.dwFlags = (uint)KeyEventF.KeyUp;
+            }
+            else
+            {
+                input.type = (int)InputType.Mouse;
+                if (iEvent == (ushort)inputEvent.move)
                 {
-                    input.type = (int)InputType.Keyboard;
-                    input.u.ki.wVk = iInfor1;
-                    if (iEvent == (ushort)inputEvent.down)
-                        input.u.ki.dwFlags = (uint)KeyEventF.KeyDown;
+                    int x = (int)iInfor1 * Screen.PrimaryScreen.Bounds.Width / 10000;
+                    int y = (int)iInfor2 * Screen.PrimaryScreen.Bounds.Height / 10000;
+                    input.u.mi.dwFlags = (uint)MouseEventF.Absolute;
+                    User32.SetCursorPos(x, y);
+                }
+                else if (iEvent == (ushort)inputEvent.down)
+                {
+                    if (iInfor1 == 1)
+                        input.u.mi.dwFlags = (uint)MouseEventF.LeftDown;
+                    else if (iInfor2 == 1)
+                        input.u.mi.dwFlags = (uint)MouseEventF.RightDown;
                     else
-                        input.u.ki.dwFlags = (uint)KeyEventF.KeyUp;
+                        input.u.mi.dwFlags = (uint)MouseEventF.MiddleDown;
                 }
                 else
                 {
-                    input.type = (int)InputType.Mouse;
-                    if (iEvent == (ushort)inputEvent.move)
-                    {
-                        int x = (int)iInfor1 * Screen.PrimaryScreen.Bounds.Width / 10000;
-                        int y = (int)iInfor2 * Screen.PrimaryScreen.Bounds.Height / 10000;
-                        input.u.mi.dwFlags = (uint)MouseEventF.Absolute;
-                        User32.SetCursorPos(x, y);
-                    }
-                    else if (iEvent == (ushort)inputEvent.down)
-                    {
-                        if (iInfor1 == 1)
-                            input.u.mi.dwFlags = (uint)MouseEventF.LeftDown;
-                        else if (iInfor2 == 1)
-                            input.u.mi.dwFlags = (uint)MouseEventF.RightDown;
-                        else
-                            input.u.mi.dwFlags = (uint)MouseEventF.MiddleDown;
-                    }
+                    if (iInfor1 == 1)
+                        input.u.mi.dwFlags = (uint)MouseEventF.LeftUp;
+                    else if (iInfor2 == 1)
+                        input.u.mi.dwFlags = (uint)MouseEventF.RightUp;
                     else
-                    {
-                        if (iInfor1 == 1)
-                            input.u.mi.dwFlags = (uint)MouseEventF.LeftUp;
-                        else if (iInfor2 == 1)
-                            input.u.mi.dwFlags = (uint)MouseEventF.RightUp;
-                        else
-                            input.u.mi.dwFlags = (uint)MouseEventF.MiddleUp;
-                    }
-                } 
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
+                        input.u.mi.dwFlags = (uint)MouseEventF.MiddleUp;
+                }
             }
             return new Input[] {input};
         }

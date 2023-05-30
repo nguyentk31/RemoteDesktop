@@ -37,6 +37,7 @@ namespace RemoteDesktop
             tbPW.Text = password;
         }
 
+// Cập nhật trạng thái Server
         private void PublishStatus(string st)
         {
             tbST.Text = st;
@@ -46,22 +47,15 @@ namespace RemoteDesktop
 // và đóng server.
         private void fServer_FormClosed(object sender, FormClosedEventArgs e)
         {
-            try
+            if (isConnected)
             {
-                if (isConnected)
-                {
-                    timer.Dispose();
-                    isConnected = false;
-                    dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
-                    RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
-                }
-                else
-                    isRunning = false;
+                timer.Dispose();
+                isConnected = false;
+                dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
+                RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Exception: of type {ex.GetType().Name}.\nMessage: {ex.Message}");
-            }
+            else
+                isRunning = false;
         }
 
 // Thiết lập trạng thái khi bắt đầu lắng nghe kết nối
