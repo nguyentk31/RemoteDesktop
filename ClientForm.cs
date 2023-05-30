@@ -167,11 +167,16 @@ namespace RemoteDesktop
             }
         }
 
+// Hàm được gọi khi nhấn nút Connect bên phía Client host để kết nối với Server host
+// Sau khi kết nối hoàn tất, hàm Authenticate() được gọi.
         internal int Connect()
         {
             try
             {
+                // Khởi tọa kết nối TCP
                 client = new TcpClient();
+
+                // Kết nối với ip và port của Server host
                 client.Connect(remoteIP, RemoteDesktop.port);
                 if (!client.Connected)
                     throw new Exception();
@@ -192,6 +197,7 @@ namespace RemoteDesktop
             }
         }
 
+// Hàm Authenticate dùng để đọc và kiểm tra password
         private bool Authenticate()
         {
             try
@@ -207,6 +213,8 @@ namespace RemoteDesktop
             return false;
         }
 
+// Hàm Run dùng để nhận và hiển thị hình ảnh do Server host gửi qua
+// hoặc nhận tín hiệu kết thúc và gửi tín hiệu kết thúc đến Server
         private void Run()
         {
             try

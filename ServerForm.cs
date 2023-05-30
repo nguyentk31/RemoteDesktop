@@ -28,6 +28,8 @@ namespace RemoteDesktop
             statusChanged += PublishStatus;
         }
 
+// Bắt đầu hàm Listen() và load dữ liệu của Server, bao gồm: 
+// Ipv4 và password
         private void fServer_Load(object sender, EventArgs e)
         {
             new Thread(new ThreadStart(Listen)).Start();
@@ -40,6 +42,8 @@ namespace RemoteDesktop
             tbST.Text = st;
         }
 
+// Được gọi khi tắt Server host, dùng để dùng việc gửi dữ liệu, gửi tín hiệu kết thúc đến Client
+// và đóng server.
         private void fServer_FormClosed(object sender, FormClosedEventArgs e)
         {
             try
@@ -60,6 +64,9 @@ namespace RemoteDesktop
             }
         }
 
+// Thiết lập trạng thái khi bắt đầu lắng nghe kết nối
+// Dùng để lắng nghe đến port và ip của Server,
+// giới hạn chỉ được 1 kết nối đến Server
         private void Listen()
         {
             try
@@ -92,6 +99,7 @@ namespace RemoteDesktop
             }
         }
 
+// Dùng để xử lý dữ liệu được gửi đến
         private void Monitor()
         {
             try
@@ -100,6 +108,7 @@ namespace RemoteDesktop
                 dataFormat type;
                 while (true)
                 {
+                    // Dữ liệu input
                     headerBytesRecv = RemoteDesktop.ReadExactly(stream, headerBytesRecv.Length);
                     type = (dataFormat)BitConverter.ToInt32(headerBytesRecv, 0);
                     dblength = BitConverter.ToInt32(headerBytesRecv, 4);
@@ -122,6 +131,9 @@ namespace RemoteDesktop
                             statusChanged?.Invoke("SERVER IS CONNECTED.");
                             dataBytesSent = BitConverter.GetBytes((int)connectionStatus.success);
                             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
+                            // Timer dùng dể thiết lập thời gian gửi hình ảnh màn hình từ server đến client
+                            // Ở đây timer được set là 100 mili giây
+                            // nên cứ mỗi 100ms, Client sẽ nhận 1 hình ảnh màn hình từ Server
                             timer = new System.Timers.Timer(100);
                             timer.Elapsed += (sender, e) => RemoteDesktop.SendImage(stream);
                             timer.Start();
