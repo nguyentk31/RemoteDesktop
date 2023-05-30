@@ -40,7 +40,7 @@ namespace RemoteDesktop
             tbST.Text = st;
         }
 
-        private void fServer_FormClosing(object sender, FormClosingEventArgs e)
+        private void fServer_FormClosed(object sender, FormClosedEventArgs e)
         {
             try
             {
@@ -138,6 +138,7 @@ namespace RemoteDesktop
                     {
                         timer.Dispose();
                         isConnected = false;
+                        Thread.Sleep(5000);
                         dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
                         RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                         break;

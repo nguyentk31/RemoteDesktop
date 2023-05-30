@@ -110,7 +110,7 @@
             MaximizeBox = false;
             Name = "fServer";
             Text = "Server";
-            FormClosing += fServer_FormClosing;
+            FormClosed += fServer_FormClosed;
             Load += fServer_Load;
             ResumeLayout(false);
             PerformLayout();

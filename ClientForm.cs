@@ -232,6 +232,7 @@ namespace RemoteDesktop
                         {
                             isConnected = false;
                             connectionClosed?.Invoke("quit");
+                            Thread.Sleep(5000);
                             dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
                             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                         }
