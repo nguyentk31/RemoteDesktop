@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "z7TUILPe630lAaZj0H24bQ8GiFnWmdhGbslo54AqvRRI9tOoHUPcwNijWDUrCfoKZbu5g90Bp/Ep3vqWNgQ0fQ==",
+  "dgSpecHash": "TZWYmU4wFwDDKtUxF1eLMlBwco2+/AMm0T7Kt2/YGJL60sqijkvR3VVG7F8gj7lBvZcV6YmFzG0IpVCOp2TD0w==",
   "success": true,
   "projectFilePath": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RemoteDesktop.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Asus\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\7.0.5\\microsoft.netcore.app.runtime.win-x64.7.0.5.nupkg.sha512",
+    "C:\\Users\\Asus\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\7.0.5\\microsoft.windowsdesktop.app.runtime.win-x64.7.0.5.nupkg.sha512",
+    "C:\\Users\\Asus\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\7.0.5\\microsoft.aspnetcore.app.runtime.win-x64.7.0.5.nupkg.sha512"
+  ],
   "logs": []
 }
