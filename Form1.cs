@@ -1,30 +1,54 @@
+using System.Net;
+
 namespace RemoteDesktop
 {
     public partial class Form1 : Form
     {
+        private IPAddress localIP;
+        private string localPW;
+        private fServer server;
+        private fClient client;
+
         public Form1()
         {
             InitializeComponent();
+            localIP = RemoteDesktop.GetIPv4();
+            localPW = RemoteDesktop.GeneratePassword(5);
+            server = new fServer(localIP, localPW);
+            client = new fClient();
         }
 
-        private void btServer_Click(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
-            this.Hide();
-            using (fServer server = new fServer())
-            {
-                server.ShowDialog();
-            }
-            this.Show();
+            tbLocalIP.Text = localIP.ToString();
+            tbLocalPW.Text = localPW;
         }
 
-        private void btClient_Click(object sender, EventArgs e)
+        private void btListen_Click(object sender, EventArgs e)
         {
-            this.Hide();
-            using (fConnection connection = new fConnection())
+            server.ShowDialog();
+        }
+
+        private void btConnect_Click(object sender, EventArgs e)
+        {
+            if (!RemoteDesktop.ValidateIPv4(tbRemoteIP.Text))
             {
-                connection.ShowDialog();
+                MessageBox.Show("Invalid IP address!");
+                return;
             }
-            this.Show();
+            int state = client.Connect(IPAddress.Parse(tbRemoteIP.Text), tbRemotePW.Text);
+            if (state == 1)
+                client.ShowDialog();
+            else if (state == 0)
+                MessageBox.Show("Wrong assword!");
+            else
+                MessageBox.Show("Server not found!");
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            server.Dispose();
+            client.Dispose();
         }
     }
 }

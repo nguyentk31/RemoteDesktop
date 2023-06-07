@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "TZWYmU4wFwDDKtUxF1eLMlBwco2+/AMm0T7Kt2/YGJL60sqijkvR3VVG7F8gj7lBvZcV6YmFzG0IpVCOp2TD0w==",
+  "dgSpecHash": "4Wg39XhUBa4CPnnFjeP/+ICdMrArZcm4jwJzpDNKx/fve42NVwmcyHYwzlNWb4umjah0or86q5CBEbmouEhrJA==",
   "success": true,
   "projectFilePath": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RemoteDesktop.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Asus\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\7.0.5\\microsoft.netcore.app.runtime.win-x64.7.0.5.nupkg.sha512",
-    "C:\\Users\\Asus\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\7.0.5\\microsoft.windowsdesktop.app.runtime.win-x64.7.0.5.nupkg.sha512",
-    "C:\\Users\\Asus\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\7.0.5\\microsoft.aspnetcore.app.runtime.win-x64.7.0.5.nupkg.sha512"
+    "C:\\Users\\Asus\\.nuget\\packages\\guna.ui2.winforms\\2.0.4.4\\guna.ui2.winforms.2.0.4.4.nupkg.sha512",
+    "C:\\Users\\Asus\\.nuget\\packages\\system.codedom\\7.0.0\\system.codedom.7.0.0.nupkg.sha512",
+    "C:\\Users\\Asus\\.nuget\\packages\\system.management\\7.0.0\\system.management.7.0.0.nupkg.sha512"
   ],
   "logs": []
 }
