@@ -16,6 +16,7 @@ namespace RemoteDesktop
         internal fClient()
         {
             InitializeComponent();
+            isConnected = false;
             headerBytesRecv = new byte[6];
             connectionClosed += CloseForm;
         }
@@ -27,7 +28,7 @@ namespace RemoteDesktop
 
         private void fClient_Load(object sender, EventArgs e)
         {
-            isConnected = false;
+            isConnected = true;
             isCursorShow = true;
             new Thread(new ThreadStart(Run)).Start();
         }
@@ -141,10 +142,7 @@ namespace RemoteDesktop
                 // Đọc phản hồi từ server
                 dataBytesRecv = RemoteDesktop.ReadExactly(stream, 8);
                 if ((connectionStatus)BitConverter.ToInt16(dataBytesRecv, 6) == connectionStatus.success)
-                {
-                    isConnected = true;
                     return 1;
-                }
                 stream.Dispose();
                 client.Dispose();
                 return 0;
