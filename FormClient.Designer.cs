@@ -58,7 +58,7 @@
             pictureBox.MouseMove += pictureBox_MouseMove;
             pictureBox.MouseUp += pictureBox_MouseUp;
             // 
-            // fClient
+            // Client
             // 
             AutoScaleDimensions = new SizeF(9F, 19F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -67,7 +67,7 @@
             Controls.Add(textBox);
             Font = new Font("Times New Roman", 12F, FontStyle.Regular, GraphicsUnit.Point);
             Margin = new Padding(4);
-            Name = "fClient";
+            Name = "Client";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Client";
             Activated += fClient_Activated;

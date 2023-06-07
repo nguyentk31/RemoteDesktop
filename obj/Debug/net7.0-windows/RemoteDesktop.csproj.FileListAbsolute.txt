@@ -18,14 +18,8 @@ D:\WorkSpace\VSCode\Csharp\New folder (2)\RemoteDesktop\obj\Debug\net7.0-windows
 D:\WorkSpace\VSCode\Csharp\New folder (2)\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.pdb
 D:\WorkSpace\VSCode\Csharp\New folder (2)\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.genruntimeconfig.cache
 D:\WorkSpace\VSCode\Csharp\New folder (2)\RemoteDesktop\obj\Debug\net7.0-windows\ref\RemoteDesktop.dll
-D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\RemoteDesktop.exe
-D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\RemoteDesktop.deps.json
-D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\RemoteDesktop.runtimeconfig.json
-D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\RemoteDesktop.dll
-D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\RemoteDesktop.pdb
 D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.csproj.AssemblyReference.cache
 D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.fClient.resources
-D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.fConnection.resources
 D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.Form1.resources
 D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.fServer.resources
 D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.csproj.GenerateResource.cache
@@ -33,8 +27,18 @@ D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.
 D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.AssemblyInfoInputs.cache
 D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.AssemblyInfo.cs
 D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.csproj.CoreCompileInputs.cache
-D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.dll
-D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\refint\RemoteDesktop.dll
-D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.pdb
 D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.genruntimeconfig.cache
-D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\ref\RemoteDesktop.dll
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\Remote Desktop.exe
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\Remote Desktop.deps.json
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\Remote Desktop.runtimeconfig.json
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\Remote Desktop.dll
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\Remote Desktop.pdb
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\Remote Desktop.dll
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\refint\Remote Desktop.dll
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\Remote Desktop.pdb
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\ref\Remote Desktop.dll
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\Guna.UI2.dll
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\System.Management.dll
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\bin\Debug\net7.0-windows\runtimes\win\lib\net7.0\System.Management.dll
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.Properties.Resources.resources
+D:\WorkSpace\VSCode\Csharp\RemoteDesktop\obj\Debug\net7.0-windows\RemoteDesktop.csproj.CopyComplete

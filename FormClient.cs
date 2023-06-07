@@ -6,23 +6,18 @@ namespace RemoteDesktop
 {
     internal partial class fClient : Form
     {
-        private IPAddress remoteIP;
-        private string password;
         private TcpClient client;
         private NetworkStream stream;
-        private static bool isActivated, isConnected, isMouseShow;
+        private static bool isActivated, isConnected, isCursorShow;
         private Point mouse;
         private byte[] headerBytesRecv, dataBytesRecv, dataBytesSent;
         private event ConnectionChangedEvent connectionClosed;
 
-        internal fClient(IPAddress rmIP, string pw)
+        internal fClient()
         {
             InitializeComponent();
-            remoteIP = rmIP;
-            password = pw;
             isConnected = false;
-            isMouseShow = true;
-            headerBytesRecv = new byte[8];
+            headerBytesRecv = new byte[6];
             connectionClosed += CloseForm;
         }
 
@@ -33,13 +28,18 @@ namespace RemoteDesktop
 
         private void fClient_Load(object sender, EventArgs e)
         {
+            isConnected = true;
+            isCursorShow = true;
             new Thread(new ThreadStart(Run)).Start();
         }
 
         private void fClient_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (!isMouseShow)
+            if (!isCursorShow)
+            {
+                isCursorShow = true;
                 Cursor.Show();
+            }
             if (isConnected)
             {
                 isConnected = false;
@@ -56,39 +56,39 @@ namespace RemoteDesktop
         private static void fClient_Deactivate(object sender, EventArgs e)
         {
             isActivated = false;
-            if (!isMouseShow)
+            if (!isCursorShow)
             {
-                isMouseShow = false;
+                isCursorShow = true;
                 Cursor.Show();
             }
         }
 
         private void textBox_KeyDown(object sender, KeyEventArgs e)
         {
-            dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.down, (ushort)e.KeyCode);
+            dataBytesSent = CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.down, (ushort)e.KeyCode);
             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
         }
 
         private void textBox_KeyUp(object sender, KeyEventArgs e)
         {
-            dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.up, (ushort)e.KeyCode);
+            dataBytesSent = CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.up, (ushort)e.KeyCode);
             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
         }
 
         private static void pictureBox_MouseEnter(object sender, EventArgs e)
         {
-            if (isActivated && isMouseShow)
+            if (isActivated && isCursorShow)
             {
-                isMouseShow = false;
+                isCursorShow = false;
                 Cursor.Hide();
             }
         }
 
         private static void pictureBox_MouseLeave(object sender, EventArgs e)
         {
-            if (isActivated && !isMouseShow)
+            if (isActivated && !isCursorShow)
             {
-                isMouseShow = true;
+                isCursorShow = true;
                 Cursor.Show();
             }
         }
@@ -100,7 +100,7 @@ namespace RemoteDesktop
             mouse = this.PointToClient(Cursor.Position);
             ushort x = (ushort)(mouse.X * 10000 / (this.Size.Width - 20));
             ushort y = (ushort)(mouse.Y * 10000 / (this.Size.Height - 40));
-            dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.move, x, y);
+            dataBytesSent = CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.move, x, y);
             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
         }
 
@@ -110,7 +110,7 @@ namespace RemoteDesktop
                 return;
             ushort x = Convert.ToUInt16(e.Button == MouseButtons.Left);
             ushort y = Convert.ToUInt16(e.Button == MouseButtons.Right);
-            dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.down, x, y);
+            dataBytesSent = CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.down, x, y);
             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
         }
 
@@ -120,51 +120,43 @@ namespace RemoteDesktop
                 return;
             ushort x = Convert.ToUInt16(e.Button == MouseButtons.Left);
             ushort y = Convert.ToUInt16(e.Button == MouseButtons.Right);
-            dataBytesSent = RemoteDesktop.CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.up, x, y);
+            dataBytesSent = CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.up, x, y);
             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
         }
 
-// Hàm được gọi khi nhấn nút Connect bên phía Client host để kết nối với Server host
-// Sau khi kết nối hoàn tất, hàm Authenticate() được gọi.
-        internal int Connect()
+        // Hàm được gọi khi nhấn nút Connect bên phía Client host để kết nối với Server host
+        // Sau khi kết nối hoàn tất, hàm Authenticate() được gọi.
+        internal int Connect(IPAddress ip, string pw)
         {
             try
             {
                 // Khởi tọa kết nối TCP
                 client = new TcpClient();
-
                 // Kết nối với ip và port của Server host
-                client.Connect(remoteIP, RemoteDesktop.port);
+                client.Connect(ip, RemoteDesktop.port);
                 if (!client.Connected)
                     throw new Exception();
                 stream = client.GetStream();
-                dataBytesSent = Encoding.ASCII.GetBytes(password);
+                dataBytesSent = Encoding.ASCII.GetBytes(pw);
                 RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
-                if (Authenticate())
+                // Đọc phản hồi từ server
+                dataBytesRecv = RemoteDesktop.ReadExactly(stream, 8);
+                if ((connectionStatus)BitConverter.ToInt16(dataBytesRecv, 6) == connectionStatus.success)
                     return 1;
-                stream.Close();
-                client.Close();
+                stream.Dispose();
+                client.Dispose();
                 return 0;
             }
             catch
             {
-                stream.Close(5000);
-                client.Close();
+                stream.Dispose();
+                client.Dispose();
                 return -1;
             }
         }
 
-// Hàm Authenticate dùng để đọc và kiểm tra password
-        private bool Authenticate()
-        {
-            dataBytesRecv = RemoteDesktop.ReadExactly(stream, 12);
-            if ((connectionStatus)BitConverter.ToInt32(dataBytesRecv, 8) == connectionStatus.success)
-                return (isConnected = true);
-            return false;
-        }
-
-// Hàm Run dùng để nhận và hiển thị hình ảnh do Server host gửi qua
-// hoặc nhận tín hiệu kết thúc và gửi tín hiệu kết thúc đến Server
+        // Hàm Run dùng để nhận và hiển thị hình ảnh do Server host gửi qua
+        // hoặc nhận tín hiệu kết thúc và gửi tín hiệu kết thúc đến Server
         private void Run()
         {
             try
@@ -174,30 +166,30 @@ namespace RemoteDesktop
                 while (true)
                 {
                     headerBytesRecv = RemoteDesktop.ReadExactly(stream, headerBytesRecv.Length);
-                    type = (dataFormat)BitConverter.ToInt32(headerBytesRecv, 0);
+                    type = (dataFormat)BitConverter.ToInt16(headerBytesRecv, 0);
                     if (type == dataFormat.handle)
                     {
-                        dblength = BitConverter.ToInt32(headerBytesRecv, 4);
+                        dblength = BitConverter.ToInt32(headerBytesRecv, 2);
                         dataBytesRecv = RemoteDesktop.ReadExactly(stream, dblength);
                         using (MemoryStream ms = new MemoryStream(dataBytesRecv))
                         {
                             pictureBox.Image = Image.FromStream(ms);
                         }
-                    } 
+                    }
                     else
                     {
                         if (isConnected)
                         {
                             isConnected = false;
                             connectionClosed?.Invoke("quit");
-                            Thread.Sleep(5000);
+                            Thread.Sleep(1000);
                             dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
                             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                         }
                         else
                         {
-                            stream.Close();
-                            client.Close();
+                            stream.Dispose();
+                            client.Dispose();
                         }
                         break;
                     }
@@ -207,6 +199,26 @@ namespace RemoteDesktop
             {
                 MessageBox.Show($"Exception of type: {ex.GetType().Name}.\nMessage: {ex.Message}.");
             }
+        }
+
+        // Chuyển các tín hiệu input từ bit thành dữ liệu dưới dạng mảng Byte
+        private byte[] CreateInputBytes(ushort iType, ushort iEvent, ushort iInfor1, ushort iInfor2 = 0)
+        {
+            // Chuyển thông tin của tín hiệu thành dữ liệu byte và lưu vào một mảng 8 bytes
+            byte[] inputBytes = new byte[8];
+
+            // Hai byte đầu chứa loại input (chuột, bàn phím)
+            Buffer.BlockCopy(BitConverter.GetBytes(iType), 0, inputBytes, 0, 2);
+
+            // Byte thứ 3 và 4 chứa thông tin sự kiện của tín hiệu đó (up, down, move, ...)
+            Buffer.BlockCopy(BitConverter.GetBytes(iEvent), 0, inputBytes, 2, 2);
+
+            // Byte thứ 5 và 6 chứa thông tin thứ nhất của tín hiệu (tọa độ x, y,...)
+            Buffer.BlockCopy(BitConverter.GetBytes(iInfor1), 0, inputBytes, 4, 2);
+
+            // Byte thứ 7 và 8 chứa thông tin thứ hai của tín hiệu (tọa độ x, y,...)
+            Buffer.BlockCopy(BitConverter.GetBytes(iInfor2), 0, inputBytes, 6, 2);
+            return inputBytes;
         }
     }
 }
