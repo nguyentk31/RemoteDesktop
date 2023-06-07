@@ -64,7 +64,7 @@ namespace RemoteDesktop
             try
             {
                 listener.Start();
-                //statusChanged?.Invoke("SERVER IS LISTENING...");
+                statusChanged?.Invoke("SERVER IS LISTENING...");
                 while (isRunning)
                 {
                     if (!listener.Pending())
@@ -117,7 +117,7 @@ namespace RemoteDesktop
                         if (infomation == password)
                         {
                             isConnected = true;
-                            //statusChanged?.Invoke("SERVER IS CONNECTED.");
+                            statusChanged?.Invoke("SERVER IS CONNECTED.");
                             dataBytesSent = BitConverter.GetBytes((ushort)connectionStatus.success);
                             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                             // Timer dùng dể thiết lập thời gian gửi hình ảnh màn hình từ server đến client
