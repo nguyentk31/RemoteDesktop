@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(fClient));
             textBox = new TextBox();
             pictureBox = new PictureBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox).BeginInit();
@@ -58,7 +59,7 @@
             pictureBox.MouseMove += pictureBox_MouseMove;
             pictureBox.MouseUp += pictureBox_MouseUp;
             // 
-            // Client
+            // fClient
             // 
             AutoScaleDimensions = new SizeF(9F, 19F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -66,13 +67,14 @@
             Controls.Add(pictureBox);
             Controls.Add(textBox);
             Font = new Font("Times New Roman", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4);
-            Name = "Client";
+            Name = "fClient";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Client";
             Activated += fClient_Activated;
             Deactivate += fClient_Deactivate;
-            FormClosed += fClient_FormClosed;
+            FormClosing += fClient_FormClosing;
             Load += fClient_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox).EndInit();
             ResumeLayout(false);

@@ -26,7 +26,9 @@ namespace RemoteDesktop
 
         private void btListen_Click(object sender, EventArgs e)
         {
+            Hide();
             server.ShowDialog();
+            Show();
         }
 
         private void btConnect_Click(object sender, EventArgs e)
@@ -38,7 +40,11 @@ namespace RemoteDesktop
             }
             int state = client.Connect(IPAddress.Parse(tbRemoteIP.Text), tbRemotePW.Text);
             if (state == 1)
+            {
+                Hide();
                 client.ShowDialog();
+                Show();
+            }
             else if (state == 0)
                 MessageBox.Show("Wrong assword!");
             else

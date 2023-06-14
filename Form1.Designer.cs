@@ -128,8 +128,7 @@
             // 
             guna2GroupBox3.BackColor = Color.Transparent;
             guna2GroupBox3.BorderColor = Color.Navy;
-            guna2GroupBox3.BorderRadius = 2;
-            guna2GroupBox3.BorderThickness = 0;
+            guna2GroupBox3.BorderRadius = 1;
             guna2GroupBox3.Controls.Add(tbLocalPW);
             guna2GroupBox3.Controls.Add(guna2HtmlLabel3);
             guna2GroupBox3.Controls.Add(tbLocalIP);
@@ -250,8 +249,7 @@
             // 
             guna2GroupBox1.BackColor = Color.Transparent;
             guna2GroupBox1.BorderColor = Color.Navy;
-            guna2GroupBox1.BorderRadius = 2;
-            guna2GroupBox1.BorderThickness = 0;
+            guna2GroupBox1.BorderRadius = 1;
             guna2GroupBox1.Controls.Add(tbRemotePW);
             guna2GroupBox1.Controls.Add(guna2HtmlLabel4);
             guna2GroupBox1.Controls.Add(tbRemoteIP);

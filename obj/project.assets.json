@@ -58,58 +58,6 @@
           }
         }
       }
-    },
-    "net7.0-windows7.0/win10-x64": {
-      "Guna.UI2.WinForms/2.0.4.4": {
-        "type": "package",
-        "dependencies": {
-          "System.Management": "7.0.0"
-        },
-        "compile": {
-          "lib/net7.0-windows7.0/Guna.UI2.dll": {}
-        },
-        "runtime": {
-          "lib/net7.0-windows7.0/Guna.UI2.dll": {}
-        },
-        "frameworkReferences": [
-          "Microsoft.WindowsDesktop.App.WindowsForms"
-        ]
-      },
-      "System.CodeDom/7.0.0": {
-        "type": "package",
-        "compile": {
-          "lib/net7.0/System.CodeDom.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net7.0/System.CodeDom.dll": {
-            "related": ".xml"
-          }
-        },
-        "build": {
-          "buildTransitive/net6.0/_._": {}
-        }
-      },
-      "System.Management/7.0.0": {
-        "type": "package",
-        "dependencies": {
-          "System.CodeDom": "7.0.0"
-        },
-        "compile": {
-          "lib/net7.0/System.Management.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "runtimes/win/lib/net7.0/System.Management.dll": {
-            "related": ".xml"
-          }
-        },
-        "build": {
-          "buildTransitive/net6.0/_._": {}
-        }
-      }
     }
   },
   "libraries": {
@@ -203,7 +151,7 @@
     "version": "1.0.0",
     "restore": {
       "projectUniqueName": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RemoteDesktop.csproj",
-      "projectName": "Remote Desktop",
+      "projectName": "RemoteDesktop",
       "projectPath": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\RemoteDesktop.csproj",
       "packagesPath": "C:\\Users\\Asus\\.nuget\\packages\\",
       "outputPath": "D:\\WorkSpace\\VSCode\\Csharp\\RemoteDesktop\\obj\\",
@@ -251,20 +199,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
-            "version": "[7.0.5, 7.0.5]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Runtime.win-x64",
-            "version": "[7.0.5, 7.0.5]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
-            "version": "[7.0.5, 7.0.5]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
@@ -273,12 +207,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.302\\RuntimeIdentifierGraph.json"
-      }
-    },
-    "runtimes": {
-      "win10-x64": {
-        "#import": []
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.304\\RuntimeIdentifierGraph.json"
       }
     }
   }

@@ -15,7 +15,7 @@ namespace RemoteDesktop
         private bool isConnected, isRunning;
         private System.Timers.Timer timer;
         private byte[] headerBytesRecv, dataBytesRecv, dataBytesSent;
-        private event ConnectionChangedEvent statusChanged;
+        private delegate void UpdateStatusDel(string status);
 
 
         internal fServer(IPAddress ip, string pw)
@@ -24,7 +24,6 @@ namespace RemoteDesktop
             listener = new TcpListener(ip, RemoteDesktop.port);
             password = pw;
             headerBytesRecv = new byte[6];
-            statusChanged += PublishStatus;
         }
 
         // Bắt đầu hàm Listen() và load dữ liệu của Server, bao gồm: 
@@ -33,18 +32,18 @@ namespace RemoteDesktop
         {
             isConnected = false;
             isRunning = true;
+            using (StreamReader sr = new StreamReader(new FileStream("./RDNote.txt", FileMode.OpenOrCreate, FileAccess.Read)))
+            {
+                richTextBox.Text = sr.ReadToEnd();
+                richTextBox.SelectionStart = richTextBox.TextLength;
+                richTextBox.ScrollToCaret();
+            }
             new Thread(new ThreadStart(Listen)).Start();
-        }
-
-        // Cập nhật trạng thái Server
-        private void PublishStatus(string st)
-        {
-            tbST.Text = st;
         }
 
         // Được gọi khi tắt Server host, dùng để dùng việc gửi dữ liệu, gửi tín hiệu kết thúc đến Client
         // và đóng server.
-        private void fServer_FormClosed(object sender, FormClosedEventArgs e)
+        private void fServer_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (isConnected)
             {
@@ -56,6 +55,18 @@ namespace RemoteDesktop
             isRunning = false;
         }
 
+        // Cập nhật trạng thái Server
+        private void UpdateStatus(string status)
+        {
+            if (tbST.InvokeRequired)
+            {
+                UpdateStatusDel updateStDel = new UpdateStatusDel(UpdateStatus);
+                tbST.Invoke(updateStDel, new object[] { status });
+                return;
+            }
+            tbST.Text = status;
+        }
+
         // Thiết lập trạng thái khi bắt đầu lắng nghe kết nối
         // Dùng để lắng nghe đến port và ip của Server,
         // giới hạn chỉ được 1 kết nối đến Server
@@ -64,7 +75,7 @@ namespace RemoteDesktop
             try
             {
                 listener.Start();
-                statusChanged?.Invoke("SERVER IS LISTENING...");
+                UpdateStatus("SERVER IS LISTENING...");
                 while (isRunning)
                 {
                     if (!listener.Pending())
@@ -117,7 +128,7 @@ namespace RemoteDesktop
                         if (infomation == password)
                         {
                             isConnected = true;
-                            statusChanged?.Invoke("SERVER IS CONNECTED.");
+                            UpdateStatus("SERVER IS CONNECTED.");
                             dataBytesSent = BitConverter.GetBytes((ushort)connectionStatus.success);
                             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);
                             // Timer dùng dể thiết lập thời gian gửi hình ảnh màn hình từ server đến client
@@ -256,6 +267,28 @@ namespace RemoteDesktop
                 }
             }
             return new Input[] { input };
+        }
+
+        private void btNote_Click(object sender, EventArgs e)
+        {
+            if (tbInfo.Text == string.Empty)
+                return;
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(new FileStream("./RDNote.txt", FileMode.Append, FileAccess.Write)))
+                {
+                    string info = DateTime.Now.ToString() + ": " + tbInfo.Text.Trim() + '\n';
+                    sw.Write(info);
+                    richTextBox.Text += info;
+                    richTextBox.SelectionStart = richTextBox.TextLength;
+                    richTextBox.ScrollToCaret();
+                    tbInfo.Clear();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception: of type {ex.GetType().Name}.\nMessage: {ex.Message}");
+            }
         }
     }
 }

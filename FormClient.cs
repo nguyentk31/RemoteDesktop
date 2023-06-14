@@ -11,19 +11,12 @@ namespace RemoteDesktop
         private static bool isActivated, isConnected, isCursorShow;
         private Point mouse;
         private byte[] headerBytesRecv, dataBytesRecv, dataBytesSent;
-        private event ConnectionChangedEvent connectionClosed;
 
         internal fClient()
         {
             InitializeComponent();
             isConnected = false;
             headerBytesRecv = new byte[6];
-            connectionClosed += CloseForm;
-        }
-
-        private void CloseForm(string msg)
-        {
-            Close();
         }
 
         private void fClient_Load(object sender, EventArgs e)
@@ -32,8 +25,8 @@ namespace RemoteDesktop
             isCursorShow = true;
             new Thread(new ThreadStart(Run)).Start();
         }
-
-        private void fClient_FormClosed(object sender, FormClosedEventArgs e)
+        
+        private void fClient_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!isCursorShow)
             {
@@ -181,7 +174,7 @@ namespace RemoteDesktop
                         if (isConnected)
                         {
                             isConnected = false;
-                            connectionClosed?.Invoke("quit");
+                            Close();
                             Thread.Sleep(1000);
                             dataBytesSent = Encoding.ASCII.GetBytes("/Quit/");
                             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.checkConnection, stream);

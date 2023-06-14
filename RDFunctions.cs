@@ -7,11 +7,10 @@ using System.Text;
 
 namespace RemoteDesktop
 {
-    internal enum dataFormat { checkConnection = 1, handle }
+    internal enum dataFormat { checkConnection, handle, message}
     internal enum connectionStatus { success = 12345, failure = 54321 }
     internal enum inputType { mouse, key }
     internal enum inputEvent { up, down, move }
-    internal delegate void ConnectionChangedEvent(string message);
     
     internal static class RemoteDesktop
     {
