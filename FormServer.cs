@@ -32,7 +32,8 @@ namespace RemoteDesktop
         {
             isConnected = false;
             isRunning = true;
-            using (StreamReader sr = new StreamReader(new FileStream("./RDNote.txt", FileMode.OpenOrCreate, FileAccess.Read)))
+            using (FileStream fs = new FileStream("./RDNote.txt", FileMode.OpenOrCreate, FileAccess.Read))
+            using (StreamReader sr = new StreamReader(fs))
             {
                 richTextBox.Text = sr.ReadToEnd();
                 richTextBox.SelectionStart = richTextBox.TextLength;
@@ -247,24 +248,17 @@ namespace RemoteDesktop
                     input.u.mi.dwFlags = (uint)MouseEventF.Absolute;
                     User32.SetCursorPos(x, y);
                 }
-                else if (iEvent == (ushort)inputEvent.down)
+                else if (iEvent == (ushort)inputEvent.wheel)
                 {
-                    if (iInfor1 == 1)
-                        input.u.mi.dwFlags = (uint)MouseEventF.LeftDown;
-                    else if (iInfor2 == 1)
-                        input.u.mi.dwFlags = (uint)MouseEventF.RightDown;
-                    else
-                        input.u.mi.dwFlags = (uint)MouseEventF.MiddleDown;
+                    input.u.mi.dwFlags = (uint)MouseEventF.Wheel;
+                    int i = iInfor1;
+                    if (iInfor1 == 0)
+                        i = -120;
+                    input.u.mi.mouseData = (uint)i;
+                        
                 }
                 else
-                {
-                    if (iInfor1 == 1)
-                        input.u.mi.dwFlags = (uint)MouseEventF.LeftUp;
-                    else if (iInfor2 == 1)
-                        input.u.mi.dwFlags = (uint)MouseEventF.RightUp;
-                    else
-                        input.u.mi.dwFlags = (uint)MouseEventF.MiddleUp;
-                }
+                    input.u.mi.dwFlags = iInfor1;
             }
             return new Input[] { input };
         }
@@ -275,7 +269,8 @@ namespace RemoteDesktop
                 return;
             try
             {
-                using (StreamWriter sw = new StreamWriter(new FileStream("./RDNote.txt", FileMode.Append, FileAccess.Write)))
+                using (FileStream fs = new FileStream("./RDNote.txt", FileMode.Append, FileAccess.Write))
+                using (StreamWriter sw = new StreamWriter(fs))
                 {
                     string info = DateTime.Now.ToString() + ": " + tbInfo.Text.Trim() + '\n';
                     sw.Write(info);

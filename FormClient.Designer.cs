@@ -58,6 +58,7 @@
             pictureBox.MouseLeave += pictureBox_MouseLeave;
             pictureBox.MouseMove += pictureBox_MouseMove;
             pictureBox.MouseUp += pictureBox_MouseUp;
+            pictureBox.MouseWheel += pictureBox_MouseWheel;
             // 
             // fClient
             // 

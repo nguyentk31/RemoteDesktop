@@ -1,16 +1,13 @@
-using System.Drawing.Imaging;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace RemoteDesktop
 {
-    internal enum dataFormat { checkConnection, handle, message}
+    internal enum dataFormat { checkConnection, handle }
     internal enum connectionStatus { success = 12345, failure = 54321 }
     internal enum inputType { mouse, key }
-    internal enum inputEvent { up, down, move }
+    internal enum inputEvent { up, down, move, wheel }
     
     internal static class RemoteDesktop
     {

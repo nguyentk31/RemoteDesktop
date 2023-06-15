@@ -56,18 +56,6 @@ namespace RemoteDesktop
             }
         }
 
-        private void textBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            dataBytesSent = CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.down, (ushort)e.KeyCode);
-            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
-        }
-
-        private void textBox_KeyUp(object sender, KeyEventArgs e)
-        {
-            dataBytesSent = CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.up, (ushort)e.KeyCode);
-            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
-        }
-
         private static void pictureBox_MouseEnter(object sender, EventArgs e)
         {
             if (isActivated && isCursorShow)
@@ -86,6 +74,19 @@ namespace RemoteDesktop
             }
         }
 
+        private void pictureBox_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (!isActivated)
+                return;
+            ushort x;
+            if (e.Delta < 0)
+                x = 0;
+            else
+                x = (ushort)e.Delta;
+            dataBytesSent = CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.wheel, x);
+            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
+        }
+
         private void pictureBox_MouseMove(object sender, MouseEventArgs e)
         {
             if (!isActivated)
@@ -101,9 +102,14 @@ namespace RemoteDesktop
         {
             if (!isActivated)
                 return;
-            ushort x = Convert.ToUInt16(e.Button == MouseButtons.Left);
-            ushort y = Convert.ToUInt16(e.Button == MouseButtons.Right);
-            dataBytesSent = CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.down, x, y);
+            ushort x;
+            if (e.Button == MouseButtons.Left)
+                x = (ushort)MouseEventF.LeftDown;
+            else if (e.Button == MouseButtons.Right)
+                x = (ushort)MouseEventF.RightDown;
+            else
+                x = (ushort)MouseEventF.MiddleDown;
+            dataBytesSent = CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.down, x);
             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
         }
 
@@ -111,9 +117,26 @@ namespace RemoteDesktop
         {
             if (!isActivated)
                 return;
-            ushort x = Convert.ToUInt16(e.Button == MouseButtons.Left);
-            ushort y = Convert.ToUInt16(e.Button == MouseButtons.Right);
-            dataBytesSent = CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.up, x, y);
+            ushort x;
+            if (e.Button == MouseButtons.Left)
+                x = (ushort)MouseEventF.LeftUp;
+            else if (e.Button == MouseButtons.Right)
+                x = (ushort)MouseEventF.RightUp;
+            else
+                x = (ushort)MouseEventF.MiddleUp;
+            dataBytesSent = CreateInputBytes((ushort)inputType.mouse, (ushort)inputEvent.up, x);
+            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
+        }
+
+        private void textBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            dataBytesSent = CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.down, (ushort)e.KeyCode);
+            RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
+        }
+
+        private void textBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            dataBytesSent = CreateInputBytes((ushort)inputType.key, (ushort)inputEvent.up, (ushort)e.KeyCode);
             RemoteDesktop.SendDataBytes(dataBytesSent, dataFormat.handle, stream);
         }
 

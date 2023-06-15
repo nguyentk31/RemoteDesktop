@@ -40,6 +40,7 @@
             // tbST
             // 
             tbST.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            tbST.Font = new Font("Times New Roman", 14F, FontStyle.Bold, GraphicsUnit.Point);
             tbST.Location = new Point(78, 12);
             tbST.Name = "tbST";
             tbST.ReadOnly = true;
@@ -60,6 +61,8 @@
             // richTextBox
             // 
             richTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            richTextBox.BackColor = SystemColors.WindowText;
+            richTextBox.ForeColor = SystemColors.Window;
             richTextBox.Location = new Point(12, 84);
             richTextBox.Name = "richTextBox";
             richTextBox.ReadOnly = true;
@@ -80,6 +83,8 @@
             // tbInfo
             // 
             tbInfo.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            tbInfo.BackColor = SystemColors.MenuText;
+            tbInfo.ForeColor = SystemColors.Window;
             tbInfo.Location = new Point(12, 423);
             tbInfo.Name = "tbInfo";
             tbInfo.Size = new Size(729, 29);
